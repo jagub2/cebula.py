@@ -13,8 +13,8 @@ class AllegroProvider(GenericProvider):
         self.allegro_api = AllegroAPIHandler(self.config['client_id'], self.config['client_secret'])
         print(self.allegro_api.login())
         self.allegro_api.authorize_device()
-        self.allegro_api.call_orig_url(self.config['url'])
-        self.filters = self.allegro_api.extract_url_filters()
+        self.api_soup = self.allegro_api.call_orig_url(self.config['url'])
+        self.filters = self.allegro_api.extract_url_filters(self.config['url'], self.api_soup)
 
     def get_new_entries(self):
         req = self.allegro_api.call_api(f"/offers/listing?{urlencode(self.filters)}")

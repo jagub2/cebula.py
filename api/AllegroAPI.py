@@ -8,7 +8,17 @@ import requests
 import time
 
 
-class AllegroAPIHandler:
+class Singleton(type):
+    _instances = {}
+
+    def __call__(cls, *args, **kwargs):
+        if cls not in cls._instances:
+            cls._instances[cls] = super(Singleton, cls).__call__(*args, **kwargs)
+        return cls._instances[cls]
+
+
+class AllegroAPIHandler(metaclass=Singleton):
+
     def __init__(self, client_id, client_secret, sandbox=True, max_failures=5):
         self.client_id = client_id
         self.client_secret = client_secret
@@ -21,10 +31,13 @@ class AllegroAPIHandler:
         self.orig_html_soup = None
         self.orig_url = None
         self.max_failures = max_failures
+        self.initialized = False
         if sandbox:
             self.api_domain = "allegro.pl.allegrosandbox.pl"
 
     def login(self):
+        if self.initialized and self.check_validity_of_login():
+            return
         req = requests.post(f"https://{self.api_domain}/auth/oauth/device",
                             auth=(self.client_id, self.client_secret),
                             data={'client_id': self.client_id})
@@ -36,6 +49,8 @@ class AllegroAPIHandler:
             return response['verification_uri_complete']
 
     def authorize_device(self, failures=0):
+        if self.initialized and self.check_validity_of_login():
+            return
         if failures > self.max_failures:
             return
         req = requests.post(f"https://{self.api_domain}/auth/oauth/token?grant_type="
@@ -51,6 +66,7 @@ class AllegroAPIHandler:
             self.access_token = response['access_token']
             self.refresh_token = response['refresh_token']
             self.token_expiry = current_time + datetime.timedelta(seconds=int(response['expires_in']))
+            self.initialized = True
 
     def call_api(self, url, post=False, data=None):
         if url.startswith('/'):
@@ -78,17 +94,18 @@ class AllegroAPIHandler:
             self.refresh_token = response['refresh_token']
             self.token_expiry = current_time + datetime.timedelta(seconds=int(response['expires_in']))
 
-    def call_orig_url(self, url):
-        self.orig_url = url
-        req = requests.get(self.orig_url)
+    @staticmethod
+    def call_orig_url(url):
+        req = requests.get(url)
         if req.status_code == requests.codes.ok:
-            self.orig_html_soup = BeautifulSoup(req.text, features="html.parser")
+            return BeautifulSoup(req.text, features="html.parser")
 
-    def extract_category_id_from_orig_url(self):
+    @staticmethod
+    def extract_category_id_from_orig_url(soup):
         category = None
-        if self.orig_html_soup:
+        if soup:
             categories_pattern: Pattern[str] = re.compile(r"window.__listing_CategoryTreeState\s*=\s*([^;]*);")
-            for script in self.orig_html_soup.find_all('script', {'src': False}):
+            for script in soup.find_all('script', {'src': False}):
                 if script:
                     match = categories_pattern.search(script.string)
                     if match:
@@ -110,10 +127,10 @@ class AllegroAPIHandler:
             return json_['filters']
         return None
 
-    def extract_url_filters(self):
+    def extract_url_filters(self, url, soup):
         filters = []
-        category_id = self.extract_category_id_from_orig_url()
-        parsed_uri: ParseResult = urlparse(self.orig_url)
+        category_id = self.extract_category_id_from_orig_url(soup)
+        parsed_uri: ParseResult = urlparse(url)
         search_phrase = ''
         for query_param in parsed_uri.query.split('&'):
             param, value = query_param.split('=')
@@ -123,9 +140,9 @@ class AllegroAPIHandler:
         if category_id:
             filters.append(('category.id', category_id))
         api_filters = self.extract_api_filters(category_id, search_phrase)
-        if self.orig_html_soup:
+        if soup:
             filters_pattern: Pattern[str] = re.compile(r"window.__listing_FiltersStoreState\s*=\s*([^;]*);")
-            for script in self.orig_html_soup.find_all('script', {'src': False}):
+            for script in soup.find_all('script', {'src': False}):
                 if script:
                     match = filters_pattern.search(script.string)
                     if match:
@@ -164,6 +181,13 @@ class AllegroAPIHandler:
 
     def get_api_domain(self):
         return self.api_domain
+
+    def check_validity_of_login(self):
+        req = self.call_api("/offers/listing?include=-all")
+        if req.status_code != requests.codes.ok:
+            self.initialized = False
+            return False
+        return True
 
 
 def normalized_filter_tuple(name, value_to_normalize_if_bool, value):
