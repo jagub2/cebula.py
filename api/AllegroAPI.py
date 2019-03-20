@@ -41,7 +41,6 @@ class AllegroAPIHandler(metaclass=Singleton):
         req = requests.post(f"https://{self.api_domain}/auth/oauth/device",
                             auth=(self.client_id, self.client_secret),
                             data={'client_id': self.client_id})
-        print(req.status_code)
         if req.status_code == requests.codes.ok:
             response = json.loads(req.text)
             self.device_code = response['device_code']
@@ -152,14 +151,11 @@ class AllegroAPIHandler(metaclass=Singleton):
                             for filter_ in slot['filters']:
                                 for filter_values in filter_['filterValues']:
                                     if filter_values['selected']:
+                                        key_name = None
+                                        value_to_normalize_if_needed = filter_values['raw']['id']
+                                        value = filter_values['raw']['value']
                                         if filter_['id'].isdigit():
-                                            filters.append(
-                                                normalized_filter_tuple(
-                                                    f"parameter.{filter_['id']}",
-                                                    filter_['raw']['id'],
-                                                    filter_values['raw']['value']
-                                                )
-                                            )
+                                            key_name = f"parameter.{filter_['id']}"
                                         else:
                                             if api_filters:
                                                 for api_filter in api_filters:
@@ -169,13 +165,15 @@ class AllegroAPIHandler(metaclass=Singleton):
                                                             key_name = api_filter['id']
                                                             if 'idSuffix' in api_filter_value:
                                                                 key_name += api_filter_value['idSuffix']
-                                                            filters.append(
-                                                                normalized_filter_tuple(
-                                                                    key_name,
-                                                                    filter_values['raw']['id'],
-                                                                    filter_values['raw']['value']
-                                                                )
-                                                            )
+                                                            value = api_filter_value['value']
+
+                                        filters.append(
+                                            normalized_filter_tuple(
+                                                key_name,
+                                                value_to_normalize_if_needed,
+                                                value
+                                            )
+                                        )
 
         return filters
 
@@ -190,8 +188,8 @@ class AllegroAPIHandler(metaclass=Singleton):
         return True
 
 
-def normalized_filter_tuple(name, value_to_normalize_if_bool, value):
+def normalized_filter_tuple(name, value_to_normalize_if_needed, value):
     value_in_tuple = value
     if value.isdigit() and int(value) == 1:
-        value_in_tuple = re.sub(r'([A-Z])', r'_\1', value_to_normalize_if_bool).upper()
+        value_in_tuple = re.sub(r'([A-Z])', r'_\1', value_to_normalize_if_needed).upper()
     return name, value_in_tuple
