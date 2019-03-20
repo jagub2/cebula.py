@@ -1,0 +1,5 @@
+import providers.GenericProvider
+import providers.OLXProvider
+import providers.PepperProvider
+import providers.RSSProvider
+import providers.WordpressProvider
