@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 import copy
+import cfscrape
 
 
 class GenericProvider(ABC):
@@ -10,6 +11,7 @@ class GenericProvider(ABC):
         self.data = {}
         self.url = config['url']
         self.call_url = None
+        self.scraper = cfscrape.create_scraper()
 
     @abstractmethod
     def get_new_entries(self):

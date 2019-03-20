@@ -1,4 +1,5 @@
 import providers.GenericProvider
+import providers.AllegroProvider
 import providers.OLXProvider
 import providers.PepperProvider
 import providers.RSSProvider

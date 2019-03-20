@@ -22,7 +22,7 @@ class OLXProvider(GenericProvider):
             if tag.has_attr('name') and tag.has_attr('value'):
                 return tag.name == 'input' and tag['name'].startswith('search[') and tag['name'].endswith(']')
 
-        req = requests.get(self.config['url'], headers={'User-Agent': self.config['user_agent']})
+        req = self.scraper.get(self.config['url'], headers={'User-Agent': self.config['user_agent']})
         if req.status_code == requests.codes.ok:
             soup = BeautifulSoup(req.text, features="html.parser")
             params_pattern: Pattern[str] = re.compile(r"var\s+geoData\s*=\s*(.*);")
@@ -44,7 +44,7 @@ class OLXProvider(GenericProvider):
                                     self.search_params.append((f"search[{key}]", value))
 
     def get_new_entries(self):
-        req = requests.post(self.call_url, data=self.search_params, headers={
+        req = self.scraper.post(self.call_url, data=self.search_params, headers={
             'User-Agent': self.config['user_agent'],
             'Accept': '*/*',
             'Referer': self.config['url'],

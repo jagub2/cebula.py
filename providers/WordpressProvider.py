@@ -13,7 +13,7 @@ class WordpressProvider(GenericProvider):
             self.call_url += f"?search={self.config['search_phrase']}"
 
     def get_new_entries(self):
-        req = requests.get(self.call_url, headers={
+        req = self.scraper.get(self.call_url, headers={
             'User-Agent': self.config['user_agent']
         })
         if req.status_code == requests.codes.ok:
