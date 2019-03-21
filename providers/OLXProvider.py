@@ -20,7 +20,10 @@ class OLXProvider(GenericProvider):
     def build_search_args(self):
         def get_hidden_search_fields(tag):
             if tag.has_attr('name') and tag.has_attr('value'):
-                return tag.name == 'input' and tag['name'].startswith('search[') and tag['name'].endswith(']')
+                return tag.name == 'input' and \
+                       tag['name'].startswith('search[') and \
+                       tag['name'].endswith(']') and \
+                       tag['type'] != 'checkbox'  # somehow checkboxes are checked when search params don't mention it
 
         req = self.scraper.get(self.config['url'], headers={'User-Agent': self.config['user_agent']})
         if req.status_code == requests.codes.ok:
