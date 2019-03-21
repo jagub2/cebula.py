@@ -21,7 +21,10 @@ class AllegroProvider(GenericProvider):
         if req.status_code == requests.codes.ok:
             offers = json.loads(req.text)
             entries = {}
-            for offer_type in ['promoted', 'regular']:
+            accepted_types = ['regular']
+            if 'include_promoted' in self.config and self.config['include_promoted']:
+                accepted_types.append('promoted')
+            for offer_type in accepted_types:
                 for offer in offers['items'][offer_type]:
                     id_ = hashlib.sha1(f"{self.config['url']}{str(offer['id'])}".encode('utf-8')).hexdigest()
                     entries[id_] = {

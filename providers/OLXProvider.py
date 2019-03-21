@@ -57,6 +57,9 @@ class OLXProvider(GenericProvider):
             soup = BeautifulSoup(req.text, features="html.parser")
             entries = {}
             for offer in soup.find_all('td', {'class': 'offer'}):
+                if 'include_promoted' in self.config and not self.config['include_promoted']:
+                    if offer.find('span', {'class': 'paid'}) and 'promoted' in offer['class']:
+                        continue
                 if offer.find('table') and offer.find('a', {'class': 'link'}):
                     id_ = hashlib.sha1((self.config['url'] + offer.find('table')['data-id']).encode('utf-8')).\
                         hexdigest()
