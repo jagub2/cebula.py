@@ -56,22 +56,31 @@ class OLXProvider(GenericProvider):
         if req.status_code == requests.codes.ok:
             soup = BeautifulSoup(req.text, features="html.parser")
             entries = {}
+            entries_ids = []
             for offer in soup.find_all('td', {'class': 'offer'}):
                 if 'include_promoted' in self.config and not self.config['include_promoted']:
                     if offer.find('span', {'class': 'paid'}) and 'promoted' in offer['class']:
                         continue
                 if offer.find('table') and offer.find('a', {'class': 'link'}):
-                    id_ = hashlib.sha1((self.config['url'] + offer.find('table')['data-id']).encode('utf-8')).\
+                    id_ = hashlib.sha1(f"{self.config['url']}{offer.find('table')['data-id']}".encode('utf-8')).\
                         hexdigest()
                     link = offer.find('a', {'class': 'link'})
                     url = link['href'].strip()
                     title = link.text.strip()
+                    photo_url = None
+                    if 'include_photos' in self.config and self.config['include_photos']:
+                        image = offer.find('img', {'class': 'fleft'})
+                        if image:
+                            photo_url = image['src']
                     entries[id_] = {
                         'link': url,
                         'title': title
                     }
+                    entries_ids.append(id_)
+                    if photo_url:
+                        entries[id_]['photo'] = photo_url
 
-            new_entries_id = list(set(entries.keys()) - set(self.data.keys()))
+            new_entries_id = [entry for entry in entries_ids if entry not in self.data.keys()]
             return new_entries_id, entries
         else:
             pass

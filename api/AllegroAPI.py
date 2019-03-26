@@ -42,7 +42,7 @@ class AllegroAPIHandler(metaclass=Singleton):
                             auth=(self.client_id, self.client_secret),
                             data={'client_id': self.client_id})
         if req.status_code == requests.codes.ok:
-            response = json.loads(req.text)
+            response = req.json()
             self.device_code = response['device_code']
             self.interval = response['interval']
             return response['verification_uri_complete']
@@ -61,25 +61,19 @@ class AllegroAPIHandler(metaclass=Singleton):
             self.authorize_device(failures=failures + 1)
         else:
             current_time = datetime.datetime.now()
-            response = json.loads(req.text)
+            response = req.json()
             self.access_token = response['access_token']
             self.refresh_token = response['refresh_token']
             self.token_expiry = current_time + datetime.timedelta(seconds=int(response['expires_in']))
             self.initialized = True
 
-    def call_api(self, url, post=False, data=None):
+    def call_api(self, url, method='GET', **kwargs):
         if url.startswith('/'):
             url = url[1:]
-        if post:
-            req = requests.post(f"https://api.{self.api_domain}/{url}", headers={
-                "Authorization": f"Bearer {self.access_token}",
-                "Accept": "application/vnd.allegro.public.v1+json"
-            }, data=data)
-        else:
-            req = requests.get(f"https://api.{self.api_domain}/{url}", headers={
-                "Authorization": f"Bearer {self.access_token}",
-                "Accept": "application/vnd.allegro.public.v1+json"
-            })
+        req = requests.request(method, f"https://api.{self.api_domain}/{url}", headers={
+            "Authorization": f"Bearer {self.access_token}",
+            "Accept": "application/vnd.allegro.public.v1+json"
+        }, **kwargs)
         return req
 
     def renew_tokens(self):
@@ -88,7 +82,7 @@ class AllegroAPIHandler(metaclass=Singleton):
                             auth=(self.client_id, self.client_secret))
         if req.status_code == requests.codes.ok:
             current_time = datetime.datetime.now()
-            response = json.loads(req.text)
+            response = req.json()
             self.access_token = response['access_token']
             self.refresh_token = response['refresh_token']
             self.token_expiry = current_time + datetime.timedelta(seconds=int(response['expires_in']))
@@ -122,7 +116,7 @@ class AllegroAPIHandler(metaclass=Singleton):
             api_call_str = f"&phrase={search_phrase}"
         req = self.call_api(f"/offers/listing?{api_call_str}&fallback=true&include=-all&include=filters")
         if req.status_code == requests.codes.ok:
-            json_ = json.loads(req.text)
+            json_ = req.json()
             return json_['filters']
         return None
 

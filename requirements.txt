@@ -2,3 +2,4 @@ beautifulsoup4
 feedparser
 requests
 cfscrape
+lxml

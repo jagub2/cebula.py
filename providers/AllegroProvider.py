@@ -21,6 +21,7 @@ class AllegroProvider(GenericProvider):
         if req.status_code == requests.codes.ok:
             offers = json.loads(req.text)
             entries = {}
+            entries_ids = []
             accepted_types = ['regular']
             if 'include_promoted' in self.config and self.config['include_promoted']:
                 accepted_types.append('promoted')
@@ -31,8 +32,8 @@ class AllegroProvider(GenericProvider):
                         'link': f"https://{self.allegro_api.get_api_domain()}/oferta/{offer['id']}",
                         'title': offer['name']
                     }
-
-            new_entries_id = list(set(entries.keys()) - set(self.data.keys()))
+                    entries_ids.append(id_)
+            new_entries_id = [entry for entry in entries_ids if entry not in self.data.keys()]
             return new_entries_id, entries
         else:
             pass
