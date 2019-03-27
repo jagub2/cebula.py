@@ -28,8 +28,6 @@ class AllegroAPIHandler(metaclass=Singleton):
         self.access_token = None
         self.refresh_token = None
         self.token_expiry = None
-        self.orig_html_soup = None
-        self.orig_url = None
         self.max_failures = max_failures
         self.initialized = False
         if sandbox:
@@ -68,6 +66,7 @@ class AllegroAPIHandler(metaclass=Singleton):
             self.initialized = True
 
     def call_api(self, url, method='GET', **kwargs):
+        self.check_tokens_validity_time_and_renew_if_needed()
         if url.startswith('/'):
             url = url[1:]
         req = requests.request(method, f"https://api.{self.api_domain}/{url}", headers={
@@ -75,6 +74,11 @@ class AllegroAPIHandler(metaclass=Singleton):
             "Accept": "application/vnd.allegro.public.v1+json"
         }, **kwargs)
         return req
+
+    def check_tokens_validity_time_and_renew_if_needed(self):
+        current_time = datetime.datetime.now()
+        if timestamps_difference(self.token_expiry, current_time) < self.max_failures:
+            self.renew_tokens()
 
     def renew_tokens(self):
         req = requests.post(f"https://{self.api_domain}/auth/oauth/token?grant_type=refresh_token"
@@ -86,27 +90,6 @@ class AllegroAPIHandler(metaclass=Singleton):
             self.access_token = response['access_token']
             self.refresh_token = response['refresh_token']
             self.token_expiry = current_time + datetime.timedelta(seconds=int(response['expires_in']))
-
-    @staticmethod
-    def call_orig_url(url):
-        req = requests.get(url)
-        if req.status_code == requests.codes.ok:
-            return BeautifulSoup(req.text, features="html.parser")
-
-    @staticmethod
-    def extract_category_id_from_orig_url(soup):
-        category = None
-        if soup:
-            categories_pattern: Pattern[str] = re.compile(r"window.__listing_CategoryTreeState\s*=\s*([^;]*);")
-            for script in soup.find_all('script', {'src': False}):
-                if script:
-                    match = categories_pattern.search(script.string)
-                    if match:
-                        categories_json = json.loads(match.group(1))
-                        category_from_json: str = categories_json['path'][-1]['id']
-                        if category_from_json.isdigit():
-                            category = int(category_from_json)
-        return category
 
     def extract_api_filters(self, category_id, search_phrase):
         api_call_str = ""
@@ -122,7 +105,7 @@ class AllegroAPIHandler(metaclass=Singleton):
 
     def extract_url_filters(self, url, soup):
         filters = []
-        category_id = self.extract_category_id_from_orig_url(soup)
+        category_id = extract_category_id_from_orig_url(soup)
         parsed_uri: ParseResult = urlparse(url)
         search_phrase = ''
         for query_param in parsed_uri.query.split('&'):
@@ -182,8 +165,34 @@ class AllegroAPIHandler(metaclass=Singleton):
         return True
 
 
+def extract_category_id_from_orig_url(soup):
+    category = None
+    if soup:
+        categories_pattern: Pattern[str] = re.compile(r"window.__listing_CategoryTreeState\s*=\s*([^;]*);")
+        for script in soup.find_all('script', {'src': False}):
+            if script:
+                match = categories_pattern.search(script.string)
+                if match:
+                    categories_json = json.loads(match.group(1))
+                    category_from_json: str = categories_json['path'][-1]['id']
+                    if category_from_json.isdigit():
+                        category = int(category_from_json)
+    return category
+
+
+def call_orig_url(url):
+    req = requests.get(url)
+    if req.status_code == requests.codes.ok:
+        return BeautifulSoup(req.text, features="lxml")
+
+
 def normalized_filter_tuple(name, value_to_normalize_if_needed, value):
     value_in_tuple = value
     if value.isdigit() and int(value) == 1:
         value_in_tuple = re.sub(r'([A-Z])', r'_\1', value_to_normalize_if_needed).upper()
     return name, value_in_tuple
+
+
+def timestamps_difference(first_timestamp, second_timestamp):
+    delta = second_timestamp - first_timestamp
+    return delta.days * 24 * 60 + (delta.seconds + delta.microseconds / 10e6) / 60
