@@ -1,5 +1,6 @@
 from providers.GenericProvider import GenericProvider
 from bs4 import BeautifulSoup
+from queue import Queue
 import hashlib
 import re
 import requests
@@ -7,8 +8,8 @@ import requests
 
 class PepperProvider(GenericProvider):
 
-    def __init__(self, config: dict, default_config: dict):
-        super(PepperProvider, self).__init__(config, default_config)
+    def __init__(self, queue: Queue, config: dict):
+        super(PepperProvider, self).__init__(queue, config)
 
     def get_new_entries(self):
         req = self.scraper.get(self.url, headers={

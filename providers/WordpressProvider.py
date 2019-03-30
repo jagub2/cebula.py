@@ -1,5 +1,5 @@
 from providers.GenericProvider import GenericProvider
-from collections import OrderedDict
+from queue import Queue
 import hashlib
 import json
 import requests
@@ -7,8 +7,8 @@ import requests
 
 class WordpressProvider(GenericProvider):
 
-    def __init__(self, config: dict, default_config: dict):
-        super(WordpressProvider, self).__init__(config, default_config)
+    def __init__(self, queue: Queue, config: dict):
+        super(WordpressProvider, self).__init__(queue, config)
         self.call_url = f"{self.config['url']}/wp-json/wp/v2/posts"
         if 'search_phrase' in self.config:
             self.call_url += f"?search={self.config['search_phrase']}"

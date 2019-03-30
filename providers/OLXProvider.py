@@ -11,8 +11,8 @@ import requests
 
 class OLXProvider(GenericProvider):
 
-    def __init__(self, queue: Queue, config: dict, default_config: dict):
-        super(OLXProvider, self).__init__(queue, config, default_config)
+    def __init__(self, queue: Queue, config: dict):
+        super(OLXProvider, self).__init__(queue, config)
         parsed_uri = urlparse(self.config['url'])
         self.call_url = f"{parsed_uri.scheme}://{parsed_uri.netloc}/ajax/search/list/"
         self.search_params = []

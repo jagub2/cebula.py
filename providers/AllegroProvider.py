@@ -9,8 +9,8 @@ import requests
 
 class AllegroProvider(GenericProvider):
 
-    def __init__(self, queue: Queue, config: dict, default_config: dict):
-        super(AllegroProvider, self).__init__(queue, config, default_config)
+    def __init__(self, queue: Queue, config: dict):
+        super(AllegroProvider, self).__init__(queue, config)
         self.allegro_api = AllegroAPIHandler(self.config['client_id'], self.config['client_secret'],
                                              self.config['use_sandbox'], self.config['max_failures'])
         print(self.allegro_api.login())

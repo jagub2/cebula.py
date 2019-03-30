@@ -8,14 +8,14 @@ from queue import Queue
 
 class ProviderBot:
 
-    def __init__(self, queue: Queue, bot_class_str: str, config: dict, default_config: dict):
+    def __init__(self, queue: Queue, bot_class_str: str, config: dict):
         self.keep_running = True
         self.bot: GenericProvider = None
         bot_module = getattr(providers, bot_class_str)
         if bot_module:
             bot_class = getattr(bot_module, bot_class_str)
             if bot_class:
-                self.bot = bot_class(queue, config, default_config)
+                self.bot = bot_class(queue, config)
             else:
                 self.keep_running = False
         else:

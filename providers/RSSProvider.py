@@ -6,8 +6,8 @@ import hashlib
 
 class RSSProvider(GenericProvider):
 
-    def __init__(self, queue: Queue, config: dict, default_config: dict):
-        super(RSSProvider, self).__init__(queue, config, default_config)
+    def __init__(self, queue: Queue, config: dict):
+        super(RSSProvider, self).__init__(queue, config)
 
     def get_new_entries(self):
         feed = feedparser.parse(self.config['url'], agent=self.config['user_agent'])

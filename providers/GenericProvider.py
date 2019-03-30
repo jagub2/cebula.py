@@ -7,11 +7,10 @@ from queue import Queue
 
 class GenericProvider(ABC):
 
-    def __init__(self, queue: Queue, config: dict, default_config: dict):
+    def __init__(self, queue: Queue, config: dict):
         lock = threading.Lock()
         with lock:
-            self.config = copy.deepcopy(default_config)
-        self.config.update(config)
+            self.config = copy.deepcopy(config)
         self.data = {}
         self.url = config['url']
         self.call_url = None
