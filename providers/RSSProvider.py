@@ -1,7 +1,6 @@
-from providers.GenericProvider import GenericProvider
+from providers.GenericProvider import *
 from queue import Queue
 import feedparser
-import hashlib
 
 
 class RSSProvider(GenericProvider):
@@ -14,7 +13,7 @@ class RSSProvider(GenericProvider):
         entries = {}
         entries_ids = []
         for entry in feed.entries:
-            id_ = hashlib.sha1(f"{self.config['url']}{entry.link}".encode('utf-8')).hexdigest()
+            id_ = sha1sum(f"{self.config['url']}{entry.link}")
             entries[id_] = {
                 'link': entry.link,
                 'title': entry.title

@@ -3,6 +3,7 @@ import cfscrape
 import threading
 from abc import ABC, abstractmethod
 from queue import Queue
+from cebula_common import sha1sum
 
 
 class GenericProvider(ABC):

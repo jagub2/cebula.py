@@ -1,7 +1,6 @@
-from providers.GenericProvider import GenericProvider
+from providers.GenericProvider import *
 from bs4 import BeautifulSoup
 from queue import Queue
-import hashlib
 import re
 import requests
 
@@ -30,7 +29,7 @@ class PepperProvider(GenericProvider):
                             continue
                     else:
                         continue
-                id_ = hashlib.sha1(f"{self.config['url']}{offer['id']}".encode('utf-8')).hexdigest()
+                id_ = sha1sum(f"{self.config['url']}{offer['id']}")
                 link = offer.find('a', {'class': 'thread-link'})
                 url = link['href'].strip()
                 title = link.text.strip()

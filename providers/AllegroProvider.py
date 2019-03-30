@@ -1,9 +1,8 @@
-from providers.GenericProvider import GenericProvider
+from providers.GenericProvider import *
 from api.AllegroAPI import AllegroAPIHandler, call_orig_url
 from urllib.parse import urlencode
 from queue import Queue
 import json
-import hashlib
 import requests
 
 
@@ -37,7 +36,7 @@ class AllegroProvider(GenericProvider):
                     accepted_types.append('promoted')
                 for offer_type in accepted_types:
                     for offer in offers[offer_type]:
-                        id_ = hashlib.sha1(f"{self.config['url']}{str(offer['id'])}".encode('utf-8')).hexdigest()
+                        id_ = sha1sum(f"{self.config['url']}{str(offer['id'])}")
                         entries[id_] = {
                             'link': f"https://{self.allegro_api.get_api_domain()}/oferta/{offer['id']}",
                             'title': offer['name']
