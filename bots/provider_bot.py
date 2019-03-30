@@ -1,21 +1,29 @@
 # pylint: disable=C0111,C0301
+from providers import *
+from cebula_common import *
+from collections import deque
 import time
 import threading
 import providers
-from providers import *
-from queue import Queue
 
 
 class ProviderBot:
 
-    def __init__(self, queue: Queue, bot_class_str: str, config: dict):
+    def __init__(self, queue: deque, bot_class_str: str, config: dict):
         self.keep_running = True
         self.bot: GenericProvider = None
         bot_module = getattr(providers, bot_class_str)
         if bot_module:
             bot_class = getattr(bot_module, bot_class_str)
             if bot_class:
-                self.bot = bot_class(queue, config)
+                config_hash = sha1sum(repr(sorted_dict(config)))
+                if does_pickle_exist(config_hash):
+                    self.bot = load_pickle(config_hash)
+                    # we need update reference to queue (deque)
+                    self.bot.queue = queue
+                else:
+                    self.bot = bot_class(queue, config)
+                    write_pickle(config_hash, self.bot)
             else:
                 self.keep_running = False
         else:

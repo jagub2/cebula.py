@@ -1,12 +1,12 @@
-from providers.GenericProvider import GenericProvider
-from queue import Queue
+from providers.GenericProvider import *
+from cebula_common import *
+from collections import deque
 import feedparser
-import hashlib
 
 
 class RSSProvider(GenericProvider):
 
-    def __init__(self, queue: Queue, config: dict):
+    def __init__(self, queue: deque, config: dict):
         super(RSSProvider, self).__init__(queue, config)
 
     def get_new_entries(self):
@@ -14,7 +14,7 @@ class RSSProvider(GenericProvider):
         entries = {}
         entries_ids = []
         for entry in feed.entries:
-            id_ = hashlib.sha1(f"{self.config['url']}{entry.link}".encode('utf-8')).hexdigest()
+            id_ = sha1sum(f"{self.config['url']}{entry.link}")
             entries[id_] = {
                 'link': entry.link,
                 'title': entry.title

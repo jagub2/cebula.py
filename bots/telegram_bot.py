@@ -1,10 +1,10 @@
 # pylint: disable=C0111,C0301
+from collections import deque
+from telegram.error import TelegramError, TimedOut, NetworkError
+from telegram.ext import CommandHandler, Updater, messagequeue
 import time
 import threading
 import telegram.bot
-from telegram.error import TelegramError, TimedOut, NetworkError
-from telegram.ext import CommandHandler, Updater, messagequeue
-from queue import Queue
 
 
 # https://github.com/python-telegram-bot/python-telegram-bot/wiki/Avoiding-flood-limits
@@ -33,7 +33,7 @@ class MQBot(telegram.bot.Bot):
 
 class TelegramBot:
 
-    def __init__(self, queue: Queue, api_key: str, master: int):
+    def __init__(self, queue: deque, api_key: str, master: int):
         self.updater, self.dispatcher, self.message_queue, self.bot = None, None, None, None
         self.queue = queue
         self.api_key = api_key
@@ -52,11 +52,13 @@ class TelegramBot:
         while self.keep_running:
             time.sleep(0.1)
             try:
-                data = self.queue.get()
-                self.dispatcher.bot.send_message(chat_id=self.master, text=f"{data['title']}: {data['link']}")
-                if 'photo' in data:
-                    self.dispatcher.bot.send_photo(chat_id=self.master, photo=data['photo'])
-                self.queue.task_done()
+                lock = threading.Lock()
+                with lock:
+                    if len(self.queue) > 0:
+                        data = self.queue.pop()
+                        self.dispatcher.bot.send_message(chat_id=self.master, text=f"{data['title']}: {data['link']}")
+                        if 'photo' in data:
+                            self.dispatcher.bot.send_photo(chat_id=self.master, photo=data['photo'])
             except (TimedOut, NetworkError, TelegramError) as e:
                 print(f"TelegramBot: Got exception: {e}")
                 self.connect()

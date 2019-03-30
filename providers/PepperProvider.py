@@ -1,14 +1,14 @@
-from providers.GenericProvider import GenericProvider
+from providers.GenericProvider import *
+from cebula_common import *
 from bs4 import BeautifulSoup
-from queue import Queue
-import hashlib
+from collections import deque
 import re
 import requests
 
 
 class PepperProvider(GenericProvider):
 
-    def __init__(self, queue: Queue, config: dict):
+    def __init__(self, queue: deque, config: dict):
         super(PepperProvider, self).__init__(queue, config)
 
     def get_new_entries(self):
@@ -30,7 +30,7 @@ class PepperProvider(GenericProvider):
                             continue
                     else:
                         continue
-                id_ = hashlib.sha1(f"{self.config['url']}{offer['id']}".encode('utf-8')).hexdigest()
+                id_ = sha1sum(f"{self.config['url']}{offer['id']}")
                 link = offer.find('a', {'class': 'thread-link'})
                 url = link['href'].strip()
                 title = link.text.strip()

@@ -1,9 +1,9 @@
-from providers.GenericProvider import GenericProvider
+from providers.GenericProvider import *
+from cebula_common import *
 from bs4 import BeautifulSoup
-from queue import Queue
+from collections import deque
 from typing import Pattern
 from urllib.parse import urlparse
-import hashlib
 import json
 import re
 import requests
@@ -11,7 +11,7 @@ import requests
 
 class OLXProvider(GenericProvider):
 
-    def __init__(self, queue: Queue, config: dict):
+    def __init__(self, queue: deque, config: dict):
         super(OLXProvider, self).__init__(queue, config)
         parsed_uri = urlparse(self.config['url'])
         self.call_url = f"{parsed_uri.scheme}://{parsed_uri.netloc}/ajax/search/list/"
@@ -63,8 +63,7 @@ class OLXProvider(GenericProvider):
                     if offer.find('span', {'class': 'paid'}) and 'promoted' in offer['class']:
                         continue
                 if offer.find('table') and offer.find('a', {'class': 'link'}):
-                    id_ = hashlib.sha1(f"{self.config['url']}{offer.find('table')['data-id']}".encode('utf-8')).\
-                        hexdigest()
+                    id_ = sha1sum(f"{self.config['url']}{offer.find('table')['data-id']}")
                     link = offer.find('a', {'class': 'link'})
                     url = link['href'].strip()
                     title = link.text.strip()

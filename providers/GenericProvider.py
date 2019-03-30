@@ -1,13 +1,14 @@
+from cebula_common import *
+from abc import ABC, abstractmethod
+from collections import deque
 import copy
 import cfscrape
 import threading
-from abc import ABC, abstractmethod
-from queue import Queue
 
 
 class GenericProvider(ABC):
 
-    def __init__(self, queue: Queue, config: dict):
+    def __init__(self, queue: deque, config: dict):
         lock = threading.Lock()
         with lock:
             self.config = copy.deepcopy(config)
@@ -26,6 +27,11 @@ class GenericProvider(ABC):
         self.notify(ids)
 
     def notify(self, ids):
-        for id_ in reversed(ids):
+        for id_ in ids:
             if not any(word.lower() in self.data[id_]['title'].lower() for word in self.config['exclude']):
-                self.queue.put(self.data[id_])
+                lock = threading.Lock()
+                with lock:
+                    self.queue.append(self.data[id_])
+        config_hash = sha1sum(repr(sorted_dict(self.config)))
+        if does_pickle_exist(config_hash):
+            write_pickle(config_hash, self)

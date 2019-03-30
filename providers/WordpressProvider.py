@@ -1,13 +1,13 @@
-from providers.GenericProvider import GenericProvider
-from queue import Queue
-import hashlib
+from providers.GenericProvider import *
+from cebula_common import *
+from collections import deque
 import json
 import requests
 
 
 class WordpressProvider(GenericProvider):
 
-    def __init__(self, queue: Queue, config: dict):
+    def __init__(self, queue: deque, config: dict):
         super(WordpressProvider, self).__init__(queue, config)
         self.call_url = f"{self.config['url']}/wp-json/wp/v2/posts"
         if 'search_phrase' in self.config:
@@ -22,7 +22,7 @@ class WordpressProvider(GenericProvider):
             entries = {}
             entries_ids = []
             for entry in req_json:
-                id_ = hashlib.sha1(f"{self.config['url']}{entry['id']}".encode('utf-8')).hexdigest()
+                id_ = sha1sum(f"{self.config['url']}{entry['id']}")
                 photo_url = None
                 if 'include_photos' in self.config and self.config['include_photos'] and \
                         '_links' in entry and \
