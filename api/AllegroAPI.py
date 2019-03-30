@@ -19,7 +19,7 @@ class Singleton(type):
 
 class AllegroAPIHandler(metaclass=Singleton):
 
-    def __init__(self, client_id, client_secret, sandbox=True, max_failures=5):
+    def __init__(self, client_id, client_secret, sandbox=True, max_failures=20):
         self.client_id = client_id
         self.client_secret = client_secret
         self.device_code = None
@@ -109,10 +109,22 @@ class AllegroAPIHandler(metaclass=Singleton):
         parsed_uri: ParseResult = urlparse(url)
         search_phrase = ''
         for query_param in parsed_uri.query.split('&'):
-            param, value = query_param.split('=')
-            if param == 'string':
-                filters.append(('phrase', value))
-                search_phrase = value
+            if len(query_param.split('=')) > 1:
+                param, value = query_param.split('=')
+                if param == 'string':
+                    filters.append(('phrase', value))
+                    search_phrase = value
+                elif param == 'order':
+                    sort_map = {
+                        'p': '-price',
+                        'pd': '+price',
+                        'd': '-withDeliveryPrice',
+                        'dd': '+withDeliveryPrice',
+                        'qd': '-popularity',
+                        't': '+endTime',
+                        'n': '-startTime',
+                    }
+                    filters.append(('sort', sort_map[value]))
         if category_id:
             filters.append(('category.id', category_id))
         api_filters = self.extract_api_filters(category_id, search_phrase)
