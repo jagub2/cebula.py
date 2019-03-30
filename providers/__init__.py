@@ -1,6 +1,6 @@
-import providers.GenericProvider
-import providers.AllegroProvider
-import providers.OLXProvider
-import providers.PepperProvider
-import providers.RSSProvider
-import providers.WordpressProvider
+from providers import GenericProvider
+from providers import AllegroProvider
+from providers import OLXProvider
+from providers import PepperProvider
+from providers import RSSProvider
+from providers import WordpressProvider

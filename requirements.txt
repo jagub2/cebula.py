@@ -3,3 +3,5 @@ feedparser
 requests
 cfscrape
 lxml
+python-telegram-bot
+pyyaml
