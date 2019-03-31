@@ -5,3 +5,4 @@ cfscrape
 lxml
 python-telegram-bot
 pyyaml
+unidecode

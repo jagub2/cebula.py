@@ -28,7 +28,9 @@ class GenericProvider(ABC):
 
     def notify(self, ids):
         for id_ in ids:
-            if not any(word.lower() in self.data[id_]['title'].lower() for word in self.config['exclude']):
+            if not any(word.lower() in self.data[id_]['title'].lower() or
+                       remove_accents(word.lower()) in self.data[id_]['title'].lower()
+                       for word in self.config['exclude']):
                 lock = threading.Lock()
                 with lock:
                     self.queue.append(self.data[id_])
