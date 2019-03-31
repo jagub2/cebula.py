@@ -1,3 +1,4 @@
+from cebula_common import *
 from bs4 import BeautifulSoup
 from typing import Pattern
 from urllib.parse import urlparse, ParseResult
@@ -13,25 +14,39 @@ class Singleton(type):
 
     def __call__(cls, *args, **kwargs):
         if cls not in cls._instances:
-            cls._instances[cls] = super(Singleton, cls).__call__(*args, **kwargs)
+            param_hash = ''
+            if 'client_id' in kwargs:
+                param_hash += kwargs['client_id']
+            else:
+                param_hash += args[0]
+            if 'client_secret' in kwargs:
+                param_hash += kwargs['client_secret']
+            else:
+                param_hash += args[1]
+            pickle_name = f'AllegroAPI-{sha1sum(param_hash)}'
+            if does_pickle_exist(pickle_name):
+                cls._instances[cls] = load_pickle(pickle_name)
+            else:
+                cls._instances[cls] = super(Singleton, cls).__call__(*args, **kwargs)
+                write_pickle(pickle_name, cls._instances[cls])
         return cls._instances[cls]
 
 
 class AllegroAPIHandler(metaclass=Singleton):
 
-    def __init__(self, client_id, client_secret, sandbox=True, max_failures=20):
+    def __init__(self, client_id, client_secret, sandbox=False, max_failures=20):
         self.client_id = client_id
         self.client_secret = client_secret
         self.device_code = None
         self.interval = 0
-        self.api_domain = "allegro.pl"
+        self.api_domain = 'allegro.pl'
         self.access_token = None
         self.refresh_token = None
         self.token_expiry = None
         self.max_failures = max_failures
         self.initialized = False
         if sandbox:
-            self.api_domain = "allegro.pl.allegrosandbox.pl"
+            self.api_domain = 'allegro.pl.allegrosandbox.pl'
 
     def login(self):
         if self.initialized and self.check_validity_of_login():
