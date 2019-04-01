@@ -11,7 +11,7 @@ class AllegroProvider(GenericProvider):
 
     def __init__(self, queue: deque, config: dict):
         super(AllegroProvider, self).__init__(queue, config)
-        self.allegro_api = AllegroAPIHandler(self.config['client_id'], self.config['client_secret'],
+        self.allegro_api = AllegroAPIHandler(self.config['allegro_client_id'], self.config['allegro_client_secret'],
                                              self.config['use_sandbox'], self.config['max_failures'])
         print(self.allegro_api.login())
         self.allegro_api.authorize_device()
