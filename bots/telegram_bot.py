@@ -1,7 +1,7 @@
 # pylint: disable=C0111,C0301
 from collections import deque
 from telegram.error import TelegramError, TimedOut, NetworkError
-from telegram.ext import CommandHandler, Updater, messagequeue
+from telegram.ext import Updater, messagequeue
 import time
 import threading
 import telegram.bot
@@ -20,7 +20,7 @@ class MQBot(telegram.bot.Bot):
     def __del__(self):
         try:
             self._msg_queue.stop()
-        except:
+        except Exception as e:
             pass
         super(MQBot, self).__del__()
 

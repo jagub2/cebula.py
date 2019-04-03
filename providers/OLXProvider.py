@@ -80,7 +80,7 @@ class OLXProvider(GenericProvider):
                     if photo_url:
                         entries[id_]['photo'] = photo_url
 
-            new_entries_id = [entry for entry in entries_ids if entry not in self.data.keys()]
+            new_entries_id = [entry for entry in entries_ids if entry not in self.ids]
             return new_entries_id, entries
         else:
             pass

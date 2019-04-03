@@ -21,5 +21,5 @@ class RSSProvider(GenericProvider):
             }
             entries_ids.append(id_)
 
-        new_entries_id = [entry for entry in entries_ids if entry not in self.data.keys()]
+        new_entries_id = [entry for entry in entries_ids if entry not in self.ids]
         return new_entries_id, entries
