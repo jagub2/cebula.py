@@ -1,0 +1,30 @@
+---
+global:
+    user_agent: Mozilla/5.0 (X11; Linux x86_64; rv:66.0) Gecko/20100101 Firefox/66.0
+    include_promoted: false
+    include_photos: false
+    use_sandbox: false
+    max_failures: 20
+    allegro_client_id: foo
+    allegro_client_secret: bar
+    notifier:
+        class: TelegramMessenger
+        opts:
+            api_key: foo:bar
+            master: 1
+    check_delay: 600
+    limit: 60
+    exclude:
+        - foo
+        - bar
+AllegroProvider@one:
+    url: 'https://allegro.pl.allegrosandbox.pl/kategoria/produkty-spozywcze-yerba-mate-i-akcesoria-125772'
+OLXProvider@two:
+    url: 'https://www.olx.pl/oferty/q-foo/'
+RSSProvider@three:
+    url: 'https://www.ebay.com/sch/i.html?_from=R40&_nkw=bar&_rss=1'
+    exclude:
+        - foo
+PepperProvider@four:
+    url: 'https://www.hotukdeals.com/search?q=foo'
+    exclude: []
