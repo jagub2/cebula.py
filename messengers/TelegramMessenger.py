@@ -2,8 +2,10 @@
 from collections import deque
 from telegram.error import TelegramError, TimedOut, NetworkError
 from telegram.ext import Updater, messagequeue
+from messengers import GenericMessenger
 import time
 import threading
+import traceback
 import telegram.bot
 
 
@@ -31,7 +33,7 @@ class MQBot(telegram.bot.Bot):
         return super(MQBot, self).send_message(*args, **kwargs)
 
 
-class TelegramBot:
+class TelegramMessenger(GenericMessenger.GenericMessenger):
 
     def __init__(self, queue: deque, api_key: str, master: int):
         self.updater, self.dispatcher, self.message_queue, self.bot = None, None, None, None
@@ -61,23 +63,10 @@ class TelegramBot:
                             self.dispatcher.bot.send_photo(chat_id=self.master, photo=data['photo'])
             except (TimedOut, NetworkError, TelegramError) as e:
                 print(f"TelegramBot: Got exception: {e}")
+                traceback.print_stack()
                 self.connect()
                 self.queue_loop()
 
     def halt(self):
         self.keep_running = False
         self.updater.stop()
-
-
-class TelegramThread(threading.Thread):
-
-    def __init__(self, bot_instance: TelegramBot):
-        self.bot_instance = bot_instance
-        threading.Thread.__init__(self)
-
-    def run(self):
-        self.bot_instance.connect()
-        self.bot_instance.queue_loop()
-
-    def halt(self):
-        self.bot_instance.halt()

@@ -2,6 +2,7 @@ from collections import OrderedDict
 import hashlib
 import os
 import pickle
+import traceback
 import unidecode
 
 
@@ -27,6 +28,7 @@ def write_pickle(data_hash: str, object_to_be_pickled):
             pickle.dump(object_to_be_pickled, pickle_file)
     except Exception as e:
         os.unlink(os.path.join(get_pickle_dir(), f"{data_hash}.pickle"))
+        traceback.print_stack()
 
 
 def load_pickle(data_hash: str):

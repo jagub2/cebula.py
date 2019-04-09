@@ -23,20 +23,11 @@ class AllegroProvider(GenericProvider):
                     'link': login_url
                 })
                 self.allegro_api.authorize_device()
-        self.api_soup = call_orig_url(self.config['url'])
-        self.filters = self.allegro_api.extract_url_filters(self.config['url'], self.api_soup)
+        api_soup = call_orig_url(self.config['url'])
+        self.filters = self.allegro_api.extract_url_filters(self.config['url'], api_soup)
         self.limit = 60
         if 'limit' in self.config:
             self.limit = self.config['limit']
-
-    def __reduce__(self):
-        return self.__class__, (self.queue, self.config), (self.ids, self.url, self.call_url, self.filters, self.limit)
-
-    def __setstate__(self, state):
-        self.ids, self.url, self.call_url, self.filters, self.limit = state
-        self.scraper = cfscrape.create_scraper()
-        self.allegro_api = AllegroAPIHandler(self.config['allegro_client_id'], self.config['allegro_client_secret'],
-                                             self.config['use_sandbox'], self.config['max_failures'])
 
     def get_new_entries(self):
         offers = {'promoted': [], 'regular': []}

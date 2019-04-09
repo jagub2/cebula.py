@@ -1,9 +1,10 @@
 # pylint: disable=C0111,C0301
-from providers import *
-from cebula_common import *
 from collections import deque
+from cebula_common import *
+from providers import *
 import time
 import threading
+import traceback
 import providers
 
 
@@ -17,6 +18,9 @@ class ProviderBot:
             bot_class = getattr(bot_module, bot_class_str)
             if bot_class:
                 config_hash = sha1sum(repr(sorted_dict(config)))
+                self.delay = 600
+                if 'check_delay' in config:
+                    self.delay = config['check_delay']
                 if does_pickle_exist(config_hash):
                     self.bot = load_pickle(config_hash)
                     # we need update reference to queue (deque)
@@ -33,9 +37,10 @@ class ProviderBot:
         while self.keep_running:
             try:
                 self.bot.scan()
-                time.sleep(600)
+                time.sleep(self.delay)
             except Exception as e:
                 print(f"ProviderBot: Got exception: {e}")
+                traceback.print_stack()
                 self.queue_loop()
 
     def halt(self):
