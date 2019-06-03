@@ -35,7 +35,8 @@ class MQBot(telegram.bot.Bot):
 
 class TelegramMessenger(GenericMessenger.GenericMessenger):
 
-    def __init__(self, queue: deque, api_key: str, master: int):
+    def __init__(self, queue: deque, api_key: str, master: int, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         self.updater, self.dispatcher, self.message_queue, self.bot = None, None, None, None
         self.queue = queue
         self.api_key = api_key

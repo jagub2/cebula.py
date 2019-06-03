@@ -23,6 +23,7 @@ class GenericProvider(ABC):
         pass
 
     def scan(self):
+        print(f'{self.__class__.__name__} @ {sha1sum(repr(sorted_dict(self.config)))}: scanning')
         ids, data = self.get_new_entries()
         self.ids.extend(ids)
         self.notify(ids, data)
@@ -30,6 +31,7 @@ class GenericProvider(ABC):
             self.ids = self.ids[-self.config['limit']:]
 
     def notify(self, ids, data):
+        i = 0
         for id_ in ids:
             if not any(word.lower() in data[id_]['title'].lower() or
                        remove_accents(word.lower()) in data[id_]['title'].lower()
@@ -37,6 +39,8 @@ class GenericProvider(ABC):
                 lock = threading.Lock()
                 with lock:
                     self.queue.append(data[id_])
+                    i += 1
+        print(f'{self.__class__.__name__} @ {sha1sum(repr(sorted_dict(self.config)))}: got {i} entries')
         config_hash = sha1sum(repr(sorted_dict(self.config)))
         if does_pickle_exist(config_hash):
             write_pickle(config_hash, self)
