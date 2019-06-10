@@ -59,7 +59,7 @@ class AllegroProvider(GenericProvider):
             accepted_types.append('promoted')
         for offer_type in accepted_types:
             for offer in offers[offer_type][:self.limit]:
-                id_ = sha1sum(f"{self.config['url']}{str(offer['id'])}")
+                id_ = str(offer['id'])
                 entries[id_] = {
                     'link': f"https://{self.allegro_api.get_api_domain()}/oferta/{offer['id']}",
                     'title': offer['name']

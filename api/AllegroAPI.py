@@ -160,7 +160,7 @@ class AllegroAPIHandler(metaclass=Singleton):
             filters.append(('category.id', category_id))
         api_filters = self.extract_api_filters(category_id, search_phrase)
         if soup:
-            filters_pattern: Pattern[str] = re.compile(r"window.__listing_FiltersStoreState\s*=\s*([^;]*);")
+            filters_pattern: Pattern[str] = re.compile(r"window.__listing_FiltersStoreState\s*=\s*([^;]*);?")
             for script in soup.find_all('script', {'src': False}):
                 if script:
                     match = filters_pattern.search(script.string)
@@ -220,7 +220,7 @@ class AllegroAPIHandler(metaclass=Singleton):
 def extract_category_id_from_orig_url(soup):
     category = None
     if soup:
-        categories_pattern: Pattern[str] = re.compile(r"window.__listing_CategoryTreeState\s*=\s*([^;]*);")
+        categories_pattern: Pattern[str] = re.compile(r"window.__listing_CategoryTreeState\s*=\s*([^;]*);?")
         for script in soup.find_all('script', {'src': False}):
             if script:
                 match = categories_pattern.search(script.string)

@@ -25,8 +25,8 @@ class GenericProvider(ABC):
     def scan(self):
         print(f'{self.__class__.__name__} @ {sha1sum(repr(sorted_dict(self.config)))}: scanning')
         ids, data = self.get_new_entries()
-        self.ids.extend(ids)
         self.notify(ids, data)
+        self.ids.extend(ids)
         if len(self.ids) > self.config['limit'] * self.config['max_failures']:
             self.ids = self.ids[-self.config['limit']:]
 
@@ -35,7 +35,8 @@ class GenericProvider(ABC):
         for id_ in ids:
             if not any(word.lower() in data[id_]['title'].lower() or
                        remove_accents(word.lower()) in data[id_]['title'].lower()
-                       for word in self.config['exclude']):
+                       for word in self.config['exclude']) and \
+                    id_ not in self.ids:
                 lock = threading.Lock()
                 with lock:
                     self.queue.append(data[id_])
