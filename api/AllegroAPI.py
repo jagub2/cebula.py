@@ -24,9 +24,9 @@ class Singleton(type):
                 param_hash += kwargs['client_secret']
             else:
                 param_hash += args[1]
-            pickle_name = f'{sha1sum(param_hash)}'
-            if does_pickle_exist(pickle_name):
-                cls._instances[cls] = load_pickle('AllegroAPIHandler-{pickle_name}')
+            pickle_name = sha1sum(param_hash)
+            if does_pickle_exist(pickle_name, 'AllegroAPIHandler'):
+                cls._instances[cls] = load_pickle(pickle_name, 'AllegroAPIHandler')
             else:
                 cls._instances[cls] = super(Singleton, cls).__call__(*args, **kwargs)
                 write_pickle(pickle_name, cls._instances[cls])
@@ -212,8 +212,8 @@ class AllegroAPIHandler(metaclass=Singleton):
     def update_pickle(self):
         lock = threading.Lock()
         with lock:
-            pickle_name = f'AllegroAPI-{sha1sum(f"{self.client_id}{self.client_secret}")}'
-            if does_pickle_exist(pickle_name):
+            pickle_name = sha1sum(f"{self.client_id}{self.client_secret}")
+            if does_pickle_exist(pickle_name, self.__class__.__name__):
                 write_pickle(pickle_name, self)
 
 

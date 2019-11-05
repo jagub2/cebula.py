@@ -21,8 +21,8 @@ class ProviderBot:
                 self.delay = 600
                 if 'check_delay' in config:
                     self.delay = config['check_delay']
-                if does_pickle_exist(config_hash):
-                    self.bot = load_pickle(f"{self.bot.__class__.__name__}-{config_hash}")
+                if does_pickle_exist(config_hash, bot_class_str):
+                    self.bot = load_pickle(config_hash, bot_class_str)
                     # we need update reference to queue (deque)
                     self.bot.queue = queue
                 else:

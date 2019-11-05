@@ -18,8 +18,9 @@ def get_pickle_dir() -> str:
     return os.path.join(os.path.dirname(os.path.realpath(__file__)), 'pickles')
 
 
-def does_pickle_exist(data_hash: str) -> bool:
-    return os.path.exists(os.path.join(get_pickle_dir(), f"{data_hash}.pickle"))
+def does_pickle_exist(data_hash: str, class_name: str) -> bool:
+    res = os.path.exists(os.path.join(get_pickle_dir(), f"{class_name}-{data_hash}.pickle"))
+    return os.path.exists(os.path.join(get_pickle_dir(), f"{class_name}-{data_hash}.pickle"))
 
 
 def write_pickle(data_hash: str, object_to_be_pickled):
@@ -31,8 +32,8 @@ def write_pickle(data_hash: str, object_to_be_pickled):
         traceback.print_stack()
 
 
-def load_pickle(data_hash: str):
-    with open(os.path.join(get_pickle_dir(), f"{data_hash}.pickle"), 'rb') as pickle_file:
+def load_pickle(data_hash: str, class_name: str):
+    with open(os.path.join(get_pickle_dir(), f"{class_name}-{data_hash}.pickle"), 'rb') as pickle_file:
         return pickle.load(pickle_file)
 
 
