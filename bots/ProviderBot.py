@@ -22,7 +22,7 @@ class ProviderBot:
                 if 'check_delay' in config:
                     self.delay = config['check_delay']
                 if does_pickle_exist(config_hash):
-                    self.bot = load_pickle(config_hash)
+                    self.bot = load_pickle(f"{self.bot.__class__.__name__}-{config_hash}")
                     # we need update reference to queue (deque)
                     self.bot.queue = queue
                 else:
@@ -41,6 +41,7 @@ class ProviderBot:
             except Exception as e:
                 print(f"ProviderBot: Got exception: {e}")
                 traceback.print_stack()
+                time.sleep(30)
                 self.queue_loop()
 
     def halt(self):

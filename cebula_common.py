@@ -24,10 +24,10 @@ def does_pickle_exist(data_hash: str) -> bool:
 
 def write_pickle(data_hash: str, object_to_be_pickled):
     try:
-        with open(os.path.join(get_pickle_dir(), f"{data_hash}.pickle"), 'wb') as pickle_file:
+        with open(os.path.join(get_pickle_dir(), f"{object_to_be_pickled.__class__.__name__}-{data_hash}.pickle"), 'wb') as pickle_file:
             pickle.dump(object_to_be_pickled, pickle_file)
     except Exception as e:
-        os.unlink(os.path.join(get_pickle_dir(), f"{data_hash}.pickle"))
+        os.unlink(os.path.join(get_pickle_dir(), f"{object_to_be_pickled.__class__.__name__}-{data_hash}.pickle"))
         traceback.print_stack()
 
 
