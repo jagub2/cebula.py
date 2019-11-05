@@ -60,10 +60,14 @@ class AllegroProvider(GenericProvider):
         for offer_type in accepted_types:
             for offer in offers[offer_type][:self.limit]:
                 id_ = str(offer['id'])
+                offer_link = f"https://{self.allegro_api.get_api_domain()}/oferta/{offer['id']}"
+                if 'vendor' in offer and 'url' in offer['vendor']:
+                    offer_link = offer['vendor']['url']
                 entries[id_] = {
-                    'link': f"https://{self.allegro_api.get_api_domain()}/oferta/{offer['id']}",
+                    'link': offer_link,
                     'title': offer['name']
                 }
+
                 entries_ids.append(id_)
         new_entries_id = [entry for entry in list(dict.fromkeys(entries_ids)) if entry not in self.ids]
         return new_entries_id, entries

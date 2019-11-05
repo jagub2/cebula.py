@@ -24,9 +24,9 @@ class Singleton(type):
                 param_hash += kwargs['client_secret']
             else:
                 param_hash += args[1]
-            pickle_name = f'AllegroAPI-{sha1sum(param_hash)}'
+            pickle_name = f'{sha1sum(param_hash)}'
             if does_pickle_exist(pickle_name):
-                cls._instances[cls] = load_pickle(pickle_name)
+                cls._instances[cls] = load_pickle('AllegroAPIHandler-{pickle_name}')
             else:
                 cls._instances[cls] = super(Singleton, cls).__call__(*args, **kwargs)
                 write_pickle(pickle_name, cls._instances[cls])
