@@ -49,17 +49,20 @@ class AllegroAPIHandler(metaclass=Singleton):
         self.login_in_progress = False
         if sandbox:
             self.api_domain = 'allegro.pl.allegrosandbox.pl'
+        print('Allegro API: __init__')
 
     def login(self):
         lock = threading.Lock()
         with lock:
             if (self.initialized and self.check_validity_of_login()) or self.login_in_progress:
                 return
+            print('Allegro API: login loop')
             self.login_in_progress = True
             req = requests.post(f"https://{self.api_domain}/auth/oauth/device",
                                 auth=(self.client_id, self.client_secret),
                                 data={'client_id': self.client_id})
             if req.status_code == requests.codes.ok:
+                print('Allegro API: login ok')
                 response = req.json()
                 self.device_code = response['device_code']
                 self.interval = response['interval']
@@ -87,6 +90,7 @@ class AllegroAPIHandler(metaclass=Singleton):
                 self.token_expiry = current_time + datetime.timedelta(seconds=int(response['expires_in']))
                 self.initialized = True
                 self.login_in_progress = False
+                print('Allegro API: authorized device')
                 self.update_pickle()
 
     def call_api(self, url, method='GET', **kwargs):
@@ -104,6 +108,7 @@ class AllegroAPIHandler(metaclass=Singleton):
     def check_tokens_validity_time_and_renew_if_needed(self):
         current_time = datetime.datetime.now()
         if timestamps_difference(self.token_expiry, current_time) < self.max_failures:
+            print('Allegro API: need renewing tokens')
             self.renew_tokens()
 
     def renew_tokens(self):
@@ -112,7 +117,9 @@ class AllegroAPIHandler(metaclass=Singleton):
             req = requests.post(f"https://{self.api_domain}/auth/oauth/token?grant_type=refresh_token"
                                 f"&refresh_token={self.refresh_token}",
                                 auth=(self.client_id, self.client_secret))
+            print('Allegro API: posted renew')
             if req.status_code == requests.codes.ok:
+                print('Allegro API: renew ok')
                 current_time = datetime.datetime.now()
                 response = req.json()
                 self.access_token = response['access_token']
@@ -159,16 +166,25 @@ class AllegroAPIHandler(metaclass=Singleton):
         if category_id:
             filters.append(('category.id', category_id))
         api_filters = self.extract_api_filters(category_id, search_phrase)
+        json_regex: Pattern[str] = re.compile(r"[(:]\s*({[^\x00-\x1F\x80-\x9F;]+})[^;]")
+        unquoted_keys: Pattern[str] = re.compile(r"\s*([a-zA-Z]+):")
+        dangling_comma: Pattern[str] = re.compile(r",\s*}")
+        js_objects: Pattern[str] = re.compile(r":\s*new [^,]+")
         if soup:
-            filters_pattern: Pattern[str] = re.compile(r"window.__listing_FiltersStoreState\s*=\s*([^;]*);?")
             for script in soup.find_all('script', {'src': False}):
-                if script:
-                    match = filters_pattern.search(script.string)
+                if 'filterValues' in script.contents[0]:
+                    contents = script.contents[0].replace('\n', '')
+                    match = json_regex.search(contents)
                     if match:
-                        filters_json = json.loads(match.group(1))
-
-                        for slot in filters_json['slots']:
-                            for filter_ in slot['filters']:
+                        json_data_str = match.group(1)
+                        json_data_str = json_data_str.replace('\'', '"')
+                        json_data_str = re.sub(unquoted_keys, r'"\1":', json_data_str)
+                        json_data_str = re.sub(dangling_comma, "}", json_data_str)
+                        json_data_str = re.sub(js_objects, ":null", json_data_str)
+                        json_data = json.loads(json_data_str) ['props']['parameters']['filters']
+                        if 'props' in json_data and 'parameters' in json_data['props'] and \
+                                'filters' in json_data['props']['parameters']:
+                            for filter_ in json_data['props']['parameters']['filters']:
                                 for filter_values in filter_['filterValues']:
                                     if filter_values['selected']:
                                         key_name = None
@@ -212,6 +228,7 @@ class AllegroAPIHandler(metaclass=Singleton):
     def update_pickle(self):
         lock = threading.Lock()
         with lock:
+            print('Allegro API: updating pickle')
             pickle_name = sha1sum(f"{self.client_id}{self.client_secret}")
             if does_pickle_exist(pickle_name, self.__class__.__name__):
                 write_pickle(pickle_name, self)
@@ -220,15 +237,14 @@ class AllegroAPIHandler(metaclass=Singleton):
 def extract_category_id_from_orig_url(soup):
     category = None
     if soup:
-        categories_pattern: Pattern[str] = re.compile(r"window.__listing_CategoryTreeState\s*=\s*([^;]*);?")
+        category_id_pattern: Pattern[str] = re.compile(r"[\"]categoryId[\"]:([^,]+)")
         for script in soup.find_all('script', {'src': False}):
-            if script:
-                match = categories_pattern.search(script.string)
+            if script and 'categoryId' in script.contents[0]:
+                match = category_id_pattern.search(script.contents[0])
                 if match:
-                    categories_json = json.loads(match.group(1))
-                    category_from_json: str = categories_json['path'][-1]['id']
-                    if category_from_json.isdigit():
-                        category = int(category_from_json)
+                    category = match.group(1).strip().replace('"', '')
+                    if category.isdigit():
+                        category = int(category)
     return category
 
 
