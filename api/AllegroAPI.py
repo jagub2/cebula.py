@@ -143,7 +143,7 @@ class AllegroAPIHandler(metaclass=Singleton):
 
     def extract_url_filters(self, url, soup):
         filters = []
-        category_id = extract_category_id_from_orig_url(soup)
+        category_id = extract_category_id_from_orig_url(soup, url)
         parsed_uri: ParseResult = urlparse(url)
         search_phrase = ''
         for query_param in parsed_uri.query.split('&'):
@@ -166,13 +166,14 @@ class AllegroAPIHandler(metaclass=Singleton):
         if category_id:
             filters.append(('category.id', category_id))
         api_filters = self.extract_api_filters(category_id, search_phrase)
-        json_regex: Pattern[str] = re.compile(r"[(:]\s*({[^\x00-\x1F\x80-\x9F;]+})[^;]")
+        # \x00-\x1F, \x7F, \x80-\x9F are non-printable unicode characters
+        json_regex: Pattern[str] = re.compile(r"[(:]\s*({[^\x00-\x1F\x80-\x9F\x7F;]+})[^;]")
         unquoted_keys: Pattern[str] = re.compile(r"\s*([a-zA-Z]+):")
         dangling_comma: Pattern[str] = re.compile(r",\s*}")
         js_objects: Pattern[str] = re.compile(r":\s*new [^,]+")
         if soup:
             for script in soup.find_all('script', {'src': False}):
-                if 'filterValues' in script.contents[0]:
+                if script and script.contents and len(script.contents) > 0 and 'filterValues' in script.contents[0]:
                     contents = script.contents[0].replace('\n', '')
                     match = json_regex.search(contents)
                     if match:
@@ -234,12 +235,19 @@ class AllegroAPIHandler(metaclass=Singleton):
                 write_pickle(pickle_name, self)
 
 
-def extract_category_id_from_orig_url(soup):
+def extract_category_id_from_orig_url(soup, url):
     category = None
+    try:
+        category = int(url.split('-')[-1].split('?')[0])
+    except:
+        pass
+    finally:
+        if category:
+            return category
     if soup:
         category_id_pattern: Pattern[str] = re.compile(r"[\"]categoryId[\"]:([^,]+)")
         for script in soup.find_all('script', {'src': False}):
-            if script and 'categoryId' in script.contents[0]:
+            if script and script.contents and len(script.contents) > 0 and 'categoryId' in script.contents[0]:
                 match = category_id_pattern.search(script.contents[0])
                 if match:
                     category = match.group(1).strip().replace('"', '')
