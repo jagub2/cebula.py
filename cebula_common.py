@@ -19,7 +19,6 @@ def get_pickle_dir() -> str:
 
 
 def does_pickle_exist(data_hash: str, class_name: str) -> bool:
-    res = os.path.exists(os.path.join(get_pickle_dir(), f"{class_name}-{data_hash}.pickle"))
     return os.path.exists(os.path.join(get_pickle_dir(), f"{class_name}-{data_hash}.pickle"))
 
 
