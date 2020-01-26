@@ -3,6 +3,7 @@ from cebula_common import *
 from api.AllegroAPI import AllegroAPIHandler, call_orig_url
 from urllib.parse import urlencode
 from collections import deque
+import copy
 import json
 import requests
 
@@ -73,12 +74,15 @@ class AllegroProvider(GenericProvider):
         return new_entries_id, entries
 
     def __getstate__(self):
-        state_dict = self.__dict__
-        del state_dict['allegro_api']
-        return state_dict
+        lock = threading.Lock()
+        with lock:
+            state_dict = copy.deepcopy(self.__dict__)
+            del state_dict['allegro_api']
+            return state_dict
 
     def __setstate__(self, state_dict):
+        state_dict['allegro_api'] = AllegroAPIHandler(state_dict['config']['allegro_client_id'],
+                                                      state_dict['config']['allegro_client_secret'],
+                                                      state_dict['config']['use_sandbox'],
+                                                      state_dict['config']['max_failures'])
         self.__dict__ = state_dict
-        self.allegro_api = AllegroAPIHandler(self.config['allegro_client_id'],
-                                             self.config['allegro_client_secret'],
-                                             self.config['use_sandbox'], self.config['max_failures'])
