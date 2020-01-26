@@ -71,3 +71,15 @@ class AllegroProvider(GenericProvider):
                 entries_ids.append(id_)
         new_entries_id = [entry for entry in list(dict.fromkeys(entries_ids)) if entry not in self.ids]
         return new_entries_id, entries
+
+    def __getstate__(self):
+        state_dict = self.__dict__
+        del state_dict['allegro_api']
+        return state_dict
+
+    def __setstate__(self, state_dict):
+        state_dict['allegro_api'] = AllegroAPIHandler(state_dict['config']['allegro_client_id'],
+                                                      state_dict['config']['allegro_client_secret'],
+                                                      state_dict['config']['use_sandbox'],
+                                                      state_dict['config']['max_failures'])
+        self.__dict__ = state_dict
