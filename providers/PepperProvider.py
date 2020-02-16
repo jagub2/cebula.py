@@ -30,7 +30,7 @@ class PepperProvider(GenericProvider):
                             continue
                     else:
                         continue
-                id_ = sha1sum(f"{self.config['url']}{offer['id']}")
+                id_ = sha1sum(f"{self.__class__.__name__}{offer['id']}")
                 link = offer.find('a', {'class': 'thread-link'})
                 url = link['href'].strip()
                 title = link.text.strip()

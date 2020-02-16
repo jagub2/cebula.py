@@ -22,7 +22,7 @@ class WordpressProvider(GenericProvider):
             entries = {}
             entries_ids = []
             for entry in req_json:
-                id_ = sha1sum(f"{self.config['url']}{entry['id']}")
+                id_ = sha1sum(f"{self.__class__.__name__}{entry['id']}")
                 photo_url = None
                 if 'include_photos' in self.config and self.config['include_photos'] and \
                         '_links' in entry and \
