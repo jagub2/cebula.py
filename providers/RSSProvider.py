@@ -14,7 +14,7 @@ class RSSProvider(GenericProvider):
         entries = {}
         entries_ids = []
         for entry in feed.entries:
-            id_ = sha1sum(f"{self.config['url']}{entry.link}")
+            id_ = sha1sum(f"{self.__class__.__name__}{entry.link}")
             entries[id_] = {
                 'link': entry.link,
                 'title': entry.title

@@ -24,7 +24,7 @@ class EbayKleinanzeigenProvider(GenericProvider):
             entries = {}
             entries_ids = []
             for offer in soup.find_all('article', {'class': 'aditem'}):
-                id_ = sha1sum(f"{self.config['url']}{offer['data-adid']}")
+                id_ = sha1sum(f"{self.__class__.__name__}{offer['data-adid']}")
                 link = offer.find('a', {'class': 'ellipsis'})
                 url = link['href'].strip()
                 if url.startswith('/'):

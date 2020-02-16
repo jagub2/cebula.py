@@ -63,7 +63,7 @@ class OLXProvider(GenericProvider):
                     if offer.find('span', {'class': 'paid'}) and 'promoted' in offer['class']:
                         continue
                 if offer.find('table') and offer.find('a', {'class': 'link'}):
-                    id_ = sha1sum(f"{self.config['url']}{offer.find('table')['data-id']}")
+                    id_ = sha1sum(f"{self.__class__.__name__}{offer.find('table')['data-id']}")
                     link = offer.find('a', {'class': 'link'})
                     url = link['href'].strip()
                     title = link.text.strip()
