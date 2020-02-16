@@ -27,6 +27,7 @@ def write_pickle(data_hash: str, object_to_be_pickled):
         with open(os.path.join(get_pickle_dir(), f"{object_to_be_pickled.__class__.__name__}-{data_hash}.pickle"), 'wb') as pickle_file:
             pickle.dump(object_to_be_pickled, pickle_file)
     except Exception as e:
+        print(f"cebula_common: Got exception: {e}")
         os.unlink(os.path.join(get_pickle_dir(), f"{object_to_be_pickled.__class__.__name__}-{data_hash}.pickle"))
         traceback.print_stack()
 

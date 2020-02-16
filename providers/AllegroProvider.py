@@ -38,7 +38,7 @@ class AllegroProvider(GenericProvider):
         while len(offers['regular']) < self.limit:
             req = self.allegro_api.call_api(f"/offers/listing?{urlencode(self.filters)}&offset={page * self.limit}")
             offers_new = json.loads(req.text)
-            if req.status_code == requests.codes.ok:
+            if req.status_code == requests.codes.ok: #pylint: disable=no-member
                 offers['promoted'].extend(offers_new['items']['promoted'])
                 offers['regular'].extend(offers_new['items']['regular'])
                 if page * self.limit > offers_new['searchMeta']['availableCount']:

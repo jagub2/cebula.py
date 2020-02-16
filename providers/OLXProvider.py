@@ -27,7 +27,7 @@ class OLXProvider(GenericProvider):
                        tag['type'] != 'checkbox'  # somehow checkboxes are checked when search params don't mention it
 
         req = self.scraper.get(self.config['url'], headers={'User-Agent': self.config['user_agent']})
-        if req.status_code == requests.codes.ok:
+        if req.status_code == requests.codes.ok: #pylint: disable=no-member
             soup = BeautifulSoup(req.text, features="html.parser")
             params_pattern: Pattern[str] = re.compile(r"var\s+geoData\s*=\s*(.*);")
             for input_ in soup.find_all(get_hidden_search_fields):
@@ -54,7 +54,7 @@ class OLXProvider(GenericProvider):
             'Referer': self.config['url'],
             'X-Requested-With': 'XMLHttpRequest'
         })
-        if req.status_code == requests.codes.ok:
+        if req.status_code == requests.codes.ok: #pylint: disable=no-member
             soup = BeautifulSoup(req.text, features="html.parser")
             entries = {}
             entries_ids = []

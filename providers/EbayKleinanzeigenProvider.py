@@ -19,7 +19,7 @@ class EbayKleinanzeigenProvider(GenericProvider):
             'Accept': '*/*',
             'Referer': self.url
         })
-        if req.status_code == requests.codes.ok:
+        if req.status_code == requests.codes.ok: #pylint: disable=no-member
             soup = BeautifulSoup(req.text, features="lxml")
             entries = {}
             entries_ids = []
