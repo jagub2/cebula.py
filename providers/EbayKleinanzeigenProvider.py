@@ -9,8 +9,8 @@ import requests
 
 class EbayKleinanzeigenProvider(GenericProvider):
 
-    def __init__(self, queue: deque, config: dict):
-        super(EbayKleinanzeigenProvider, self).__init__(queue, config)
+    def __init__(self, queue: deque, config: dict, id_list: IdList):
+        super(EbayKleinanzeigenProvider, self).__init__(queue, config, id_list)
         self.parsed_uri = urlparse(self.url)
 
     def get_new_entries(self):
@@ -43,7 +43,7 @@ class EbayKleinanzeigenProvider(GenericProvider):
                     entries[id_]['photo'] = photo_url
                 entries_ids.append(id_)
 
-            new_entries_id = [entry for entry in entries_ids if entry not in self.ids]
+            new_entries_id = [entry for entry in entries_ids if not self.id_list.is_id_present(entry)]
             return new_entries_id, entries
         else:
             pass

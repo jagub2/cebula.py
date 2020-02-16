@@ -6,8 +6,8 @@ import feedparser
 
 class RSSProvider(GenericProvider):
 
-    def __init__(self, queue: deque, config: dict):
-        super(RSSProvider, self).__init__(queue, config)
+    def __init__(self, queue: deque, config: dict, id_list: IdList):
+        super(RSSProvider, self).__init__(queue, config, id_list)
 
     def get_new_entries(self):
         feed = feedparser.parse(self.config['url'], agent=self.config['user_agent'])
@@ -21,5 +21,5 @@ class RSSProvider(GenericProvider):
             }
             entries_ids.append(id_)
 
-        new_entries_id = [entry for entry in entries_ids if entry not in self.ids]
+        new_entries_id = [entry for entry in entries_ids if not self.id_list.is_id_present(entry)]
         return new_entries_id, entries

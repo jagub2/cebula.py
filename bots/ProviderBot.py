@@ -10,7 +10,7 @@ import providers
 
 class ProviderBot:
 
-    def __init__(self, queue: deque, bot_class_str: str, config: dict):
+    def __init__(self, queue: deque, bot_class_str: str, config: dict, id_list: IdList):
         self.keep_running = True
         self.bot: GenericProvider = None
         bot_module = getattr(providers, bot_class_str)
@@ -25,8 +25,9 @@ class ProviderBot:
                     self.bot = load_pickle(config_hash, bot_class_str)
                     # we need update reference to queue (deque)
                     self.bot.queue = queue
+                    self.bot.id_list = id_list
                 else:
-                    self.bot = bot_class(queue, config)
+                    self.bot = bot_class(queue, config, id_list)
                     write_pickle(config_hash, self.bot)
             else:
                 self.keep_running = False

@@ -8,8 +8,8 @@ import requests
 
 class PepperProvider(GenericProvider):
 
-    def __init__(self, queue: deque, config: dict):
-        super(PepperProvider, self).__init__(queue, config)
+    def __init__(self, queue: deque, config: dict, id_list: IdList):
+        super(PepperProvider, self).__init__(queue, config, id_list)
 
     def get_new_entries(self):
         req = self.scraper.get(self.url, headers={
@@ -47,7 +47,7 @@ class PepperProvider(GenericProvider):
                     entries[id_]['photo'] = photo_url
                 entries_ids.append(id_)
 
-            new_entries_id = [entry for entry in entries_ids if entry not in self.ids]
+            new_entries_id = [entry for entry in entries_ids if not self.id_list.is_id_present(entry)]
             return new_entries_id, entries
         else:
             pass

@@ -7,8 +7,8 @@ import requests
 
 class WordpressProvider(GenericProvider):
 
-    def __init__(self, queue: deque, config: dict):
-        super(WordpressProvider, self).__init__(queue, config)
+    def __init__(self, queue: deque, config: dict, id_list: IdList):
+        super(WordpressProvider, self).__init__(queue, config, id_list)
         self.call_url = f"{self.config['url']}/wp-json/wp/v2/posts"
         if 'search_phrase' in self.config:
             self.call_url += f"?search={self.config['search_phrase']}"
@@ -40,7 +40,7 @@ class WordpressProvider(GenericProvider):
                 entries_ids.append(id_)
                 if photo_url:
                     entries[id_]['photo'] = photo_url
-            new_entries_id = [entry for entry in entries_ids if entry not in self.ids]
+            new_entries_id = [entry for entry in entries_ids if not self.id_list.is_id_present(entry)]
             return new_entries_id, entries
         else:
             pass

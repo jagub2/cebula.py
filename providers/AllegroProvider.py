@@ -3,15 +3,14 @@ from cebula_common import *
 from api.AllegroAPI import AllegroAPIHandler, call_orig_url
 from urllib.parse import urlencode
 from collections import deque
-import copy
 import json
 import requests
 
 
 class AllegroProvider(GenericProvider):
 
-    def __init__(self, queue: deque, config: dict):
-        super(AllegroProvider, self).__init__(queue, config)
+    def __init__(self, queue: deque, config: dict, id_list: IdList):
+        super(AllegroProvider, self).__init__(queue, config, id_list)
         self.allegro_api = AllegroAPIHandler(self.config['allegro_client_id'], self.config['allegro_client_secret'],
                                              self.config['use_sandbox'], self.config['max_failures'])
         lock = threading.Lock()
@@ -70,13 +69,13 @@ class AllegroProvider(GenericProvider):
                 }
 
                 entries_ids.append(id_)
-        new_entries_id = [entry for entry in list(dict.fromkeys(entries_ids)) if entry not in self.ids]
+        new_entries_id = [entry for entry in list(dict.fromkeys(entries_ids)) if not self.id_list.is_id_present(entry)]
         return new_entries_id, entries
 
     def __getstate__(self):
         lock = threading.Lock()
         with lock:
-            state_dict = copy.deepcopy(self.__dict__)
+            state_dict = self.__dict__.copy()
             del state_dict['allegro_api']
             return state_dict
 
