@@ -11,8 +11,8 @@ import requests
 
 class OLXProvider(GenericProvider):
 
-    def __init__(self, queue: deque, config: dict):
-        super(OLXProvider, self).__init__(queue, config)
+    def __init__(self, queue: deque, config: dict, id_list: IdList):
+        super(OLXProvider, self).__init__(queue, config, id_list)
         parsed_uri = urlparse(self.config['url'])
         self.call_url = f"{parsed_uri.scheme}://{parsed_uri.netloc}/ajax/search/list/"
         self.search_params = []
@@ -27,7 +27,7 @@ class OLXProvider(GenericProvider):
                        tag['type'] != 'checkbox'  # somehow checkboxes are checked when search params don't mention it
 
         req = self.scraper.get(self.config['url'], headers={'User-Agent': self.config['user_agent']})
-        if req.status_code == requests.codes.ok:
+        if req.status_code == requests.codes.ok: #pylint: disable=no-member
             soup = BeautifulSoup(req.text, features="html.parser")
             params_pattern: Pattern[str] = re.compile(r"var\s+geoData\s*=\s*(.*);")
             for input_ in soup.find_all(get_hidden_search_fields):
@@ -54,7 +54,7 @@ class OLXProvider(GenericProvider):
             'Referer': self.config['url'],
             'X-Requested-With': 'XMLHttpRequest'
         })
-        if req.status_code == requests.codes.ok:
+        if req.status_code == requests.codes.ok: #pylint: disable=no-member
             soup = BeautifulSoup(req.text, features="html.parser")
             entries = {}
             entries_ids = []
@@ -80,7 +80,7 @@ class OLXProvider(GenericProvider):
                     if photo_url:
                         entries[id_]['photo'] = photo_url
 
-            new_entries_id = [entry for entry in entries_ids if entry not in self.ids]
+            new_entries_id = [entry for entry in entries_ids if not self.id_list.is_id_present(entry)]
             return new_entries_id, entries
         else:
             pass

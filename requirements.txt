@@ -6,3 +6,5 @@ lxml
 python-telegram-bot
 pyyaml
 unidecode
+redis
+hiredis

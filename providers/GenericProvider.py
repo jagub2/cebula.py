@@ -1,18 +1,17 @@
 from cebula_common import *
 from abc import ABC, abstractmethod
 from collections import deque
-import copy
 import cfscrape
 import threading
 
 
 class GenericProvider(ABC):
 
-    def __init__(self, queue: deque, config: dict):
+    def __init__(self, queue: deque, config: dict, id_list: IdList):
         lock = threading.Lock()
         with lock:
-            self.config = copy.deepcopy(config)
-        self.ids = []
+            self.config = config.copy()
+        self.id_list = id_list
         self.url = config['url']
         self.call_url = None
         self.scraper = cfscrape.create_scraper()
@@ -26,9 +25,7 @@ class GenericProvider(ABC):
         print(f'{self.__class__.__name__} @ {sha1sum(repr(sorted_dict(self.config)))}: scanning')
         ids, data = self.get_new_entries()
         self.notify(ids, data)
-        self.ids.extend(ids)
-        if len(self.ids) > self.config['limit'] * self.config['max_failures']:
-            self.ids = self.ids[-self.config['limit']:]
+        self.id_list.put_ids(ids)
 
     def notify(self, ids, data):
         i = 0
@@ -36,7 +33,7 @@ class GenericProvider(ABC):
             if not any(word.lower() in data[id_]['title'].lower() or
                        remove_accents(word.lower()) in data[id_]['title'].lower()
                        for word in self.config['exclude']) and \
-                    id_ not in self.ids:
+                    not self.id_list.is_id_present(id_):
                 lock = threading.Lock()
                 with lock:
                     self.queue.append(data[id_])
@@ -45,3 +42,11 @@ class GenericProvider(ABC):
         config_hash = sha1sum(repr(sorted_dict(self.config)))
         if does_pickle_exist(config_hash, self.__class__.__name__):
             write_pickle(config_hash, self)
+
+    def __getstate__(self):
+        lock = threading.Lock()
+        with lock:
+            state_dict = self.__dict__.copy()
+            del state_dict['id_list']
+            del state_dict['queue']
+            return state_dict
