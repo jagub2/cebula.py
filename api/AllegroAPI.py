@@ -182,7 +182,10 @@ class AllegroAPIHandler(metaclass=Singleton):
                         json_data_str = re.sub(unquoted_keys, r'"\1":', json_data_str)
                         json_data_str = re.sub(dangling_comma, "}", json_data_str)
                         json_data_str = re.sub(js_objects, ":null", json_data_str)
-                        json_data = json.loads(json_data_str) ['props']['parameters']['filters']
+                        try:
+                            json_data = json.loads(json_data_str)['props']['parameters']['filters']
+                        except ValueError as e:
+                            continue
                         if 'props' in json_data and 'parameters' in json_data['props'] and \
                                 'filters' in json_data['props']['parameters']:
                             for filter_ in json_data['props']['parameters']['filters']:
