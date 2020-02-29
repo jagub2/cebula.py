@@ -32,6 +32,8 @@ class PepperProvider(GenericProvider):
                         continue
                 id_ = sha1sum(f"{self.__class__.__name__}{offer['id']}")
                 link = offer.find('a', {'class': 'thread-link'})
+                if not link:
+                    continue
                 url = link['href'].strip()
                 title = link.text.strip()
                 photo_url = None
