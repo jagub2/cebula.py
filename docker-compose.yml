@@ -1,0 +1,29 @@
+version: '3'
+
+services:
+
+  cebula-py:
+    build: ./
+    container_name: cebula-py
+    networks:
+      - cebula
+    depends_on:
+      - cebula-redis
+    volumes:
+      - ./pickles:/app/pickles
+      - ./config.yaml:/app/config.yaml:ro
+      - /etc/localtime:/etc/localtime:ro
+    restart: unless-stopped
+
+  cebula-redis:
+    image: redis
+    container_name: cebula-redis
+    networks:
+      - cebula
+    volumes:
+      - ./redis_data:/data
+      - /etc/localtime:/etc/localtime:ro
+    restart: unless-stopped
+
+networks:
+  cebula:

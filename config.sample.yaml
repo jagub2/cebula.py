@@ -14,6 +14,9 @@ global:
             master: 1
     check_delay: 600
     limit: 60
+    redis:
+        host: cebula-redis
+        port: 6379
     exclude:
         - foo
         - bar
