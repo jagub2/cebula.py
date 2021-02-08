@@ -7,11 +7,20 @@ steps:
     image: cyberia_ci_worker
     pull: never
     environment:
+      REPO: /wired/wired_enc/jakub/cebula.py
       SSH_KEY:
         from_secret: SSH_KEY
     commands:
     - eval `ssh-agent`
     - echo "$SSH_KEY" | ssh-add -
-    - ssh dockerci@cyberia -- '-f /wired/wired_enc/jakub/cebula.py/docker-compose.yml restart'
+    - ssh-keyscan -H cyberia > ~/.ssh/ssh_known_hosts 2> /dev/null
+    - |
+      ssh dockerci@cyberia -- <<-EOF
+      pushd "$${REPO}" && \
+      git fetch origin +refs/heads/master && \
+      git checkout "${DRONE_COMMIT}" && \
+      docker-compose restart && \
+      popd
+      EOF
     - kill "$SSH_AGENT_PID"
 
