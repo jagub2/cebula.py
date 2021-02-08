@@ -19,6 +19,7 @@ steps:
       pushd "$${REPO}" && \
       git fetch origin +refs/heads/master && \
       git checkout "${DRONE_COMMIT}" && \
+      docker-compose build && \
       docker-compose restart && \
       popd
       EOF

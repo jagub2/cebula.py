@@ -1,3 +1,5 @@
 config.yaml
 pickles
 redis_data
+.gitignore
+.drone.yml
