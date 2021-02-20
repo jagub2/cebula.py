@@ -9,5 +9,10 @@ RUN apk add --no-cache --virtual .build-deps gcc musl-dev libc-dev libxslt-dev l
 COPY . /app
 WORKDIR /app
 
+RUN addgroup -S cebula && \
+    adduser -S cebula -G cebula && \
+    chown -R cebula:cebula /app
+USER cebula
+
 ENTRYPOINT ["python", "-u", "/app/cebula.py"]
 
