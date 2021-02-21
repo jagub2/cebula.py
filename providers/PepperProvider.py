@@ -41,7 +41,7 @@ class PepperProvider(GenericProvider):
                 if 'include_photos' in self.config and self.config['include_photos']:
                     image = offer.find('img', {'class': 'thread-image'})
                     if image:
-                        photo_url = image['src']
+                        photo_url = image.get('src')
                 entries[id_] = {
                     'link': url,
                     'title': title
