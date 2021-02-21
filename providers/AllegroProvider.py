@@ -69,14 +69,8 @@ class AllegroProvider(GenericProvider):
                     'title': offer['name']
                 }
                 if 'include_photos' in self.config and self.config['include_photos']:
-                    req = self.allegro_api.call_api(f"/sale/offers/{offer['id']}")
-                    offer_info = json.loads(req.text)
-                    if 'images' in offer_info:
-                        offer_photos = []
-                        for image in offer_info['images']:
-                            if 'url' in image:
-                                offer_photos.append(image['url'])
-                        entries[id_]['photos'] = offer_photos
+                    if 'images' in offer:
+                        entries[id_]['photos'] = [x['url'] for x in offer['images']]
 
                 entries_ids.append(id_)
         new_entries_id = [entry for entry in list(dict.fromkeys(entries_ids)) if not self.id_list.is_id_present(entry)]
