@@ -1,4 +1,4 @@
-from providers.GenericProvider import *
+from providers.GenericProvider import * #pylint: disable=unused-wildcard-import
 from cebula_common import *
 from bs4 import BeautifulSoup
 from collections import deque
@@ -40,7 +40,7 @@ class EbayKleinanzeigenProvider(GenericProvider):
                     'title': title
                 }
                 if photo_url:
-                    entries[id_]['photo'] = photo_url
+                    entries[id_]['photos'] = [photo_url]
                 entries_ids.append(id_)
 
             new_entries_id = [entry for entry in entries_ids if not self.id_list.is_id_present(entry)]

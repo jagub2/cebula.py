@@ -1,4 +1,4 @@
-from providers.GenericProvider import *
+from providers.GenericProvider import * #pylint: disable=unused-wildcard-import
 from cebula_common import *
 from collections import deque
 import feedparser

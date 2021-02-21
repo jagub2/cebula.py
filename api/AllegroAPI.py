@@ -1,4 +1,4 @@
-from cebula_common import *
+from cebula_common import * #pylint: disable=unused-wildcard-import
 from bs4 import BeautifulSoup
 from typing import Pattern
 from urllib.parse import urlparse, ParseResult
@@ -61,7 +61,7 @@ class AllegroAPIHandler(metaclass=Singleton):
             req = requests.post(f"https://{self.api_domain}/auth/oauth/device",
                                 auth=(self.client_id, self.client_secret),
                                 data={'client_id': self.client_id})
-            if req.status_code == requests.codes.ok:
+            if req.status_code == requests.codes.ok: #pylint: disable=no-member
                 print('Allegro API: login ok')
                 response = req.json()
                 self.device_code = response['device_code']
@@ -79,7 +79,7 @@ class AllegroAPIHandler(metaclass=Singleton):
                                 f"urn%3Aietf%3Aparams%3Aoauth%3Agrant-type%3Adevice_code&device_code="
                                 f"{self.device_code}",
                                 auth=(self.client_id, self.client_secret))
-            if req.status_code != requests.codes.ok:
+            if req.status_code != requests.codes.ok: #pylint: disable=no-member
                 time.sleep(self.interval)
                 self.authorize_device(failures=failures + 1)
             else:
@@ -118,7 +118,7 @@ class AllegroAPIHandler(metaclass=Singleton):
                                 f"&refresh_token={self.refresh_token}",
                                 auth=(self.client_id, self.client_secret))
             print('Allegro API: posted renew')
-            if req.status_code == requests.codes.ok:
+            if req.status_code == requests.codes.ok: #pylint: disable=no-member
                 print('Allegro API: renew ok')
                 current_time = datetime.datetime.now()
                 response = req.json()
@@ -136,7 +136,7 @@ class AllegroAPIHandler(metaclass=Singleton):
             if search_phrase != '':
                 api_call_str = f"&phrase={search_phrase}"
             req = self.call_api(f"/offers/listing?{api_call_str}&fallback=true&include=-all&include=filters")
-            if req.status_code == requests.codes.ok:
+            if req.status_code == requests.codes.ok: #pylint: disable=no-member
                 json_ = req.json()
                 return json_['filters']
             return None
@@ -184,7 +184,7 @@ class AllegroAPIHandler(metaclass=Singleton):
                         json_data_str = re.sub(js_objects, ":null", json_data_str)
                         try:
                             json_data = json.loads(json_data_str)['props']['parameters']['filters']
-                        except ValueError as e:
+                        except:
                             continue
                         if 'props' in json_data and 'parameters' in json_data['props'] and \
                                 'filters' in json_data['props']['parameters']:
@@ -224,7 +224,7 @@ class AllegroAPIHandler(metaclass=Singleton):
         lock = threading.Lock()
         with lock:
             req = self.call_api("/offers/listing?include=-all")
-            if req.status_code != requests.codes.ok:
+            if req.status_code != requests.codes.ok: #pylint: disable=no-member
                 self.initialized = False
                 return False
             return True
@@ -261,7 +261,7 @@ def extract_category_id_from_orig_url(soup, url):
 
 def call_orig_url(url):
     req = requests.get(url)
-    if req.status_code == requests.codes.ok:
+    if req.status_code == requests.codes.ok: #pylint: disable=no-member
         return BeautifulSoup(req.text, features="lxml")
 
 

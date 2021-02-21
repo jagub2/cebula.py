@@ -1,7 +1,7 @@
 # pylint: disable=C0111,C0301
 from collections import deque
-from cebula_common import *
-from providers import *
+from cebula_common import * #pylint: disable=unused-wildcard-import
+from providers import * #pylint: disable=unused-wildcard-import
 import time
 import threading
 import traceback

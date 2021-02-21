@@ -1,5 +1,6 @@
 # pylint: disable=C0111,C0301
 from collections import deque
+from telegram import InputMediaPhoto
 from telegram.error import TelegramError, TimedOut, NetworkError
 from telegram.ext import Updater, messagequeue
 from messengers import GenericMessenger
@@ -22,9 +23,9 @@ class MQBot(telegram.bot.Bot):
     def __del__(self):
         try:
             self._msg_queue.stop()
-        except Exception as e:
+        except:
             pass
-        super(MQBot, self).__del__()
+        super(MQBot, self).__del__() # pylint: disable=no-member
 
     @messagequeue.queuedmessage
     def send_message(self, *args, **kwargs):
@@ -59,9 +60,14 @@ class TelegramMessenger(GenericMessenger.GenericMessenger):
                 with lock:
                     if len(self.queue) > 0:
                         data = self.queue.pop()
-                        self.dispatcher.bot.send_message(chat_id=self.master, text=f"{data['title']}: {data['link']}")
-                        if 'photo' in data:
-                            self.dispatcher.bot.send_photo(chat_id=self.master, photo=data['photo'])
+                        if 'photos' in data and len(data['photos']) > 0:
+                            media = []
+                            for photo in data['photos']:
+                                media.append(InputMediaPhoto(media=photo))
+                            media[0].caption = f"{data['title']}: {data['link']}"
+                            self.dispatcher.bot.send_media_group(chat_id=self.master, media=media)
+                        else:
+                            self.dispatcher.bot.send_message(chat_id=self.master, text=f"{data['title']}: {data['link']}")
             except (TimedOut, NetworkError, TelegramError) as e:
                 print(f"TelegramBot: Got exception: {e}")
                 traceback.print_stack()

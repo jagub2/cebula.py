@@ -1,4 +1,4 @@
-from providers.GenericProvider import *
+from providers.GenericProvider import * #pylint: disable=unused-wildcard-import
 from cebula_common import *
 from collections import deque
 import json
@@ -39,8 +39,6 @@ class WordpressProvider(GenericProvider):
                 }
                 entries_ids.append(id_)
                 if photo_url:
-                    entries[id_]['photo'] = photo_url
+                    entries[id_]['photos'] = [photo_url]
             new_entries_id = [entry for entry in entries_ids if not self.id_list.is_id_present(entry)]
             return new_entries_id, entries
-        else:
-            pass

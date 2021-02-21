@@ -1,4 +1,4 @@
-from cebula_common import *
+from cebula_common import * #pylint: disable=unused-wildcard-import
 from abc import ABC, abstractmethod
 from collections import deque
 import cfscrape
