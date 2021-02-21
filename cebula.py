@@ -1,6 +1,8 @@
 from collections import deque
 from bots import *
 from cebula_common import IdList
+from loguru import logger
+import sys
 import yaml
 try:
     from yaml import CLoader as Loader, CDumper as Dumper
@@ -8,7 +10,9 @@ except ImportError:
     from yaml import Loader, Dumper
 
 
+@logger.catch
 def main():
+    logger.add(sys.stderr, format="{time} {level} {message}", level="DEBUG", backtrace=True, diagnose=True)
     queue = deque()
 
     with open('config.yaml', 'r') as f:

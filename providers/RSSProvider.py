@@ -4,6 +4,7 @@ from collections import deque
 import feedparser
 
 
+@for_all_methods(logger.catch)
 class RSSProvider(GenericProvider):
 
     def __init__(self, queue: deque, config: dict, id_list: IdList):

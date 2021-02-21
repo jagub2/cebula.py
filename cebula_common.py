@@ -64,3 +64,11 @@ def load_pickle(data_hash: str, class_name: str):
 
 def remove_accents(input_string: str) -> str:
     return unidecode.unidecode(input_string)
+
+def for_all_methods(decorator):
+    def decorate(cls):
+        for attr in cls.__dict__: # there's propably a better way to do this
+            if callable(getattr(cls, attr)):
+                setattr(cls, attr, decorator(getattr(cls, attr)))
+        return cls
+    return decorate

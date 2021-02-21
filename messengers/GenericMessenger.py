@@ -1,4 +1,5 @@
 from abc import abstractmethod
+from loguru import logger
 
 
 class GenericMessenger:

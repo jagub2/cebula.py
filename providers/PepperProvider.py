@@ -6,6 +6,7 @@ import re
 import requests
 
 
+@for_all_methods(logger.catch)
 class PepperProvider(GenericProvider):
 
     def __init__(self, queue: deque, config: dict, id_list: IdList):

@@ -1,8 +1,10 @@
 # pylint: disable=C0111,C0301
 from collections import deque
+from loguru import logger
 from telegram import InputMediaPhoto
 from telegram.error import TelegramError, TimedOut, NetworkError
 from telegram.ext import Updater, messagequeue
+from cebula_common import for_all_methods
 from messengers import GenericMessenger
 import time
 import threading
@@ -11,6 +13,7 @@ import telegram.bot
 
 
 # https://github.com/python-telegram-bot/python-telegram-bot/wiki/Avoiding-flood-limits
+@for_all_methods(logger.catch)
 class MQBot(telegram.bot.Bot):
 
     """A subclass of Bot which delegates send method handling to MQ"""
@@ -34,6 +37,7 @@ class MQBot(telegram.bot.Bot):
         return super(MQBot, self).send_message(*args, **kwargs)
 
 
+@for_all_methods(logger.catch)
 class TelegramMessenger(GenericMessenger.GenericMessenger):
 
     def __init__(self, queue: deque, api_key: str, master: int, *args, **kwargs):

@@ -5,6 +5,7 @@ import json
 import requests
 
 
+@for_all_methods(logger.catch)
 class WordpressProvider(GenericProvider):
 
     def __init__(self, queue: deque, config: dict, id_list: IdList):

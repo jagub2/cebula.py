@@ -1,10 +1,12 @@
 from cebula_common import * #pylint: disable=unused-wildcard-import
 from abc import ABC, abstractmethod
 from collections import deque
+from loguru import logger
 import cfscrape
 import threading
 
 
+@for_all_methods(logger.catch)
 class GenericProvider(ABC):
 
     def __init__(self, queue: deque, config: dict, id_list: IdList):
