@@ -34,14 +34,12 @@ class EbayKleinanzeigenProvider(GenericProvider):
                 photo_url = None
                 if 'include_photos' in self.config and self.config['include_photos']:
                     image = offer.find('div', {'class': 'imagebox'})['data-imgsrc']
-                    if image:
-                        photo_url = image.get('src')
                 entries[id_] = {
                     'link': url,
                     'title': title
                 }
-                if photo_url:
-                    entries[id_]['photos'] = [photo_url]
+                if image:
+                    entries[id_]['photos'] = [image]
                 entries_ids.append(id_)
 
             new_entries_id = [entry for entry in entries_ids if not self.id_list.is_id_present(entry)]
