@@ -31,7 +31,6 @@ class EbayKleinanzeigenProvider(GenericProvider):
                 if url.startswith('/'):
                     url = f"{self.parsed_uri.scheme}://{self.parsed_uri.netloc}{url}"
                 title = link.text.strip()
-                photo_url = None
                 if 'include_photos' in self.config and self.config['include_photos']:
                     image = offer.find('div', {'class': 'imagebox'})['data-imgsrc']
                 entries[id_] = {
