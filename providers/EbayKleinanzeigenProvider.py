@@ -32,7 +32,9 @@ class EbayKleinanzeigenProvider(GenericProvider):
                     url = f"{self.parsed_uri.scheme}://{self.parsed_uri.netloc}{url}"
                 title = link.text.strip()
                 if 'include_photos' in self.config and self.config['include_photos']:
-                    image = offer.find('div', {'class': 'imagebox'})['data-imgsrc']
+                    image_box = offer.find('div', {'class': 'imagebox'})
+                    if 'data-imgsrc' in image_box.attrs:
+                        image = image_box.get('data-imgsrc')
                 entries[id_] = {
                     'link': url,
                     'title': title
