@@ -1,5 +1,6 @@
 from cebula_common import * #pylint: disable=unused-wildcard-import
 from bs4 import BeautifulSoup
+from loguru import logger
 from typing import Pattern
 from urllib.parse import urlparse, ParseResult
 import datetime
@@ -49,20 +50,20 @@ class AllegroAPIHandler(metaclass=Singleton):
         self.login_in_progress = False
         if sandbox:
             self.api_domain = 'allegro.pl.allegrosandbox.pl'
-        print('Allegro API: __init__')
+        logger.info('Allegro API: __init__')
 
     def login(self):
         lock = threading.Lock()
         with lock:
             if (self.initialized and self.check_validity_of_login()) or self.login_in_progress:
                 return
-            print('Allegro API: login loop')
+            logger.info('Allegro API: login loop')
             self.login_in_progress = True
             req = requests.post(f"https://{self.api_domain}/auth/oauth/device",
                                 auth=(self.client_id, self.client_secret),
                                 data={'client_id': self.client_id})
             if req.status_code == requests.codes.ok: #pylint: disable=no-member
-                print('Allegro API: login ok')
+                logger.info('Allegro API: login ok')
                 response = req.json()
                 self.device_code = response['device_code']
                 self.interval = response['interval']
@@ -90,7 +91,7 @@ class AllegroAPIHandler(metaclass=Singleton):
                 self.token_expiry = current_time + datetime.timedelta(seconds=int(response['expires_in']))
                 self.initialized = True
                 self.login_in_progress = False
-                print('Allegro API: authorized device')
+                logger.info('Allegro API: authorized device')
                 self.update_pickle()
 
     def call_api(self, url, method='GET', **kwargs):
@@ -108,7 +109,7 @@ class AllegroAPIHandler(metaclass=Singleton):
     def check_tokens_validity_time_and_renew_if_needed(self):
         current_time = datetime.datetime.now()
         if timestamps_difference(self.token_expiry, current_time) < self.max_failures:
-            print('Allegro API: need renewing tokens')
+            logger.info('Allegro API: need renewing tokens')
             self.renew_tokens()
 
     def renew_tokens(self):
@@ -117,9 +118,9 @@ class AllegroAPIHandler(metaclass=Singleton):
             req = requests.post(f"https://{self.api_domain}/auth/oauth/token?grant_type=refresh_token"
                                 f"&refresh_token={self.refresh_token}",
                                 auth=(self.client_id, self.client_secret))
-            print('Allegro API: posted renew')
+            logger.info('Allegro API: posted renew')
             if req.status_code == requests.codes.ok: #pylint: disable=no-member
-                print('Allegro API: renew ok')
+                logger.info('Allegro API: renew ok')
                 current_time = datetime.datetime.now()
                 response = req.json()
                 self.access_token = response['access_token']
@@ -232,7 +233,7 @@ class AllegroAPIHandler(metaclass=Singleton):
     def update_pickle(self):
         lock = threading.Lock()
         with lock:
-            print('Allegro API: updating pickle')
+            logger.info('Allegro API: updating pickle')
             pickle_name = sha1sum(f"{self.client_id}{self.client_secret}")
             if does_pickle_exist(pickle_name, self.__class__.__name__):
                 write_pickle(pickle_name, self)

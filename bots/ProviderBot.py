@@ -1,5 +1,6 @@
 # pylint: disable=C0111,C0301
 from collections import deque
+from loguru import logger
 from cebula_common import * #pylint: disable=unused-wildcard-import
 from providers import * #pylint: disable=unused-wildcard-import
 import time
@@ -40,7 +41,7 @@ class ProviderBot:
                 self.bot.scan()
                 time.sleep(self.delay)
             except Exception as e:
-                print(f"ProviderBot: Got exception: {e}")
+                logger.error(f"ProviderBot: Got exception: {e}")
                 traceback.print_stack()
                 time.sleep(30)
                 self.queue_loop()

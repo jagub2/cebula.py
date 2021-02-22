@@ -93,7 +93,6 @@ class OLXProvider(GenericProvider):
             if wrapper:
                 photos = wrapper.find_all('img')
                 for photo in photos:
-                    print(photo)
                     src = 'src'
                     if 'data-src' in photo.attrs:
                         src = 'data-src'

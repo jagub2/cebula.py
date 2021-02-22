@@ -24,7 +24,7 @@ class GenericProvider(ABC):
         pass
 
     def scan(self):
-        print(f'{self.__class__.__name__} @ {sha1sum(repr(sorted_dict(self.config)))}: scanning')
+        logger.info(f'{self.__class__.__name__} @ {sha1sum(repr(sorted_dict(self.config)))}: scanning')
         ids, data = self.get_new_entries()
         self.notify(ids, data)
         self.id_list.put_ids(ids)
@@ -40,7 +40,7 @@ class GenericProvider(ABC):
                 with lock:
                     self.queue.append(data[id_])
                     i += 1
-        print(f'{self.__class__.__name__} @ {sha1sum(repr(sorted_dict(self.config)))}: got {i} entries')
+        logger.info(f'{self.__class__.__name__} @ {sha1sum(repr(sorted_dict(self.config)))}: got {i} entries')
         config_hash = sha1sum(repr(sorted_dict(self.config)))
         if does_pickle_exist(config_hash, self.__class__.__name__):
             write_pickle(config_hash, self)

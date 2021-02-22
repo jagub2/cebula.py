@@ -73,7 +73,7 @@ class TelegramMessenger(GenericMessenger.GenericMessenger):
                         else:
                             self.dispatcher.bot.send_message(chat_id=self.master, text=f"{data['title']}: {data['link']}")
             except (TimedOut, NetworkError, TelegramError) as e:
-                print(f"TelegramBot: Got exception: {e}")
+                logger.error(f"TelegramBot: Got exception: {e}")
                 traceback.print_stack()
                 self.connect()
                 self.queue_loop()
