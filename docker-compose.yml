@@ -13,6 +13,8 @@ services:
       - ./pickles:/app/pickles
       - ./config.yaml:/app/config.yaml:ro
       - /etc/localtime:/etc/localtime:ro
+    environment:
+      - LOGURU_AUTOINIT=False
     restart: unless-stopped
 
   cebula-redis:
