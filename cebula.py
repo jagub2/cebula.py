@@ -12,7 +12,6 @@ except ImportError:
 
 @logger.catch
 def main():
-    logger.add(sys.stderr, format="{time} {level} {message}", level="DEBUG", backtrace=True, diagnose=True)
     queue = deque()
 
     with open('config.yaml', 'r') as f:
