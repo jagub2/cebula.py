@@ -28,7 +28,6 @@ class MQBot(telegram.bot.Bot):
             self._msg_queue.stop()
         except:
             pass
-        super(MQBot, self).__del__() # pylint: disable=no-member
 
     @messagequeue.queuedmessage
     def send_message(self, *args, **kwargs):
@@ -73,7 +72,8 @@ class TelegramMessenger(GenericMessenger.GenericMessenger):
                                 self.dispatcher.bot.send_media_group(chat_id=self.master, media=media)
                         else:
                             self.dispatcher.bot.send_message(chat_id=self.master, text=f"{data['title']}: {data['link']}")
-            except (TimedOut, NetworkError, TelegramError, Unauthorized, BadRequest, ChatMigrated, RetryAfter, Conflict) as e:
+            except (TimedOut, NetworkError, TelegramError, Unauthorized, BadRequest, \
+                ChatMigrated, RetryAfter, Conflict, InvalidToken) as e:
                 logger.error(f"TelegramBot: Got exception: {e}")
                 traceback.print_stack()
                 self.connect()
