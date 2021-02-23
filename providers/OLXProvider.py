@@ -88,19 +88,16 @@ class OLXProvider(GenericProvider):
         all_photos = []
         if req.status_code == requests.codes.ok: #pylint: disable=no-member
             soup = BeautifulSoup(req.text, features="html.parser")
-            wrapper = soup.find('div', {'class': 'swiper-wrapper'})
+            wrapper = soup.find('ul', {'id': 'descGallery'})
             if not wrapper:
-                wrapper = soup.find('ul', {'id': 'descGallery'})
+                wrapper = soup.find('div', {'id': 'descImage'})
             if wrapper:
                 photos = wrapper.find_all('img')
                 if not photos:
                     photos = wrapper.find_all('a')
                 for photo in photos:
                     src = 'src'
-                    if 'data-src' in photo.attrs:
-                        src = 'data-src'
-                    elif 'href' in photo.attrs:
+                    if 'href' in photo.attrs:
                         src = 'href'
                     all_photos.append(photo.get(src))
-                pass
         return all_photos
