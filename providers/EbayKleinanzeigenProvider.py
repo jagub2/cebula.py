@@ -54,7 +54,7 @@ class EbayKleinanzeigenProvider(GenericProvider):
         all_photos = []
         if req.status_code == requests.codes.ok: #pylint: disable=no-member
             soup = BeautifulSoup(req.text, features="html.parser")
-            gallery = soup.find('div', {'id': 'galleryimage-element'})
+            gallery = soup.find('div', {'class': 'galleryimage-element'})
             if gallery:
                 photos = gallery.find_all('img')
                 for photo in photos:
