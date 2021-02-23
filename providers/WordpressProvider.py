@@ -14,14 +14,13 @@ class WordpressProvider(GenericProvider):
         if 'search_phrase' in self.config:
             self.call_url += f"?search={self.config['search_phrase']}"
 
-    def get_new_entries(self):
+    def get_new_entries(self) -> dict:
         req = self.scraper.get(self.call_url, headers={
             'User-Agent': self.config['user_agent']
         })
         if req.status_code == requests.codes.ok: #pylint: disable=no-member
             req_json = req.json()
             entries = {}
-            entries_ids = []
             for entry in req_json:
                 id_ = sha1sum(f"{self.__class__.__name__}{entry['id']}")
                 if self.id_list.is_id_present(id_):
@@ -40,8 +39,7 @@ class WordpressProvider(GenericProvider):
                     'link': entry['link'],
                     'title': entry['title']['rendered']
                 }
-                entries_ids.append(id_)
                 if photo_url:
                     entries[id_]['photos'] = [photo_url]
 
-            return entries_ids, entries
+            return entries

@@ -30,11 +30,10 @@ class AllegroProvider(GenericProvider):
         if 'limit' in self.config:
             self.limit = self.config['limit']
 
-    def get_new_entries(self):
+    def get_new_entries(self) -> dict:
         offers = {'promoted': [], 'regular': []}
         page = 0
         entries = {}
-        entries_ids = []
         while len(offers['regular']) < self.limit:
             req = self.allegro_api.call_api(f"/offers/listing?{urlencode(self.filters)}&offset={page * self.limit}")
             offers_new = json.loads(req.text)
@@ -74,8 +73,7 @@ class AllegroProvider(GenericProvider):
                     if 'images' in offer:
                         entries[id_]['photos'] = [x['url'] for x in offer['images']]
 
-                entries_ids.append(id_)
-        return entries_ids, entries
+        return entries
 
     def __getstate__(self):
         lock = threading.Lock()

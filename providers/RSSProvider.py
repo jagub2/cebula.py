@@ -10,10 +10,9 @@ class RSSProvider(GenericProvider):
     def __init__(self, queue: deque, config: dict, id_list: IdList):
         super(RSSProvider, self).__init__(queue, config, id_list)
 
-    def get_new_entries(self):
+    def get_new_entries(self) -> dict:
         feed = feedparser.parse(self.config['url'], agent=self.config['user_agent'])
         entries = {}
-        entries_ids = []
         for entry in feed.entries:
             id_ = sha1sum(f"{self.__class__.__name__}{entry.link}")
             if self.id_list.is_id_present(id_):
@@ -22,6 +21,5 @@ class RSSProvider(GenericProvider):
                 'link': entry.link,
                 'title': entry.title
             }
-            entries_ids.append(id_)
 
-        return entries_ids, entries
+        return entries

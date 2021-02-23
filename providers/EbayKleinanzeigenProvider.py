@@ -14,7 +14,7 @@ class EbayKleinanzeigenProvider(GenericProvider):
         super(EbayKleinanzeigenProvider, self).__init__(queue, config, id_list)
         self.parsed_uri = urlparse(self.url)
 
-    def get_new_entries(self):
+    def get_new_entries(self) -> dict:
         req = self.scraper.get(self.url, headers={
             'User-Agent': self.config['user_agent'],
             'Accept': '*/*',
@@ -23,7 +23,6 @@ class EbayKleinanzeigenProvider(GenericProvider):
         if req.status_code == requests.codes.ok: #pylint: disable=no-member
             soup = BeautifulSoup(req.text, features="lxml")
             entries = {}
-            entries_ids = []
             for offer in soup.find_all('article', {'class': 'aditem'}):
                 id_ = sha1sum(f"{self.__class__.__name__}{offer['data-adid']}")
                 if self.id_list.is_id_present(id_):
@@ -41,9 +40,8 @@ class EbayKleinanzeigenProvider(GenericProvider):
                 if 'include_photos' in self.config and self.config['include_photos']:
                     if not self.id_list.is_id_present(id_):
                         entries[id_]['photos'] = self.get_photos(url)
-                entries_ids.append(id_)
 
-            return entries_ids, entries
+            return entries
 
     def get_photos(self, url: str) -> list:
         req = self.scraper.get(url, headers={

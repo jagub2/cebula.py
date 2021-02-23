@@ -48,7 +48,7 @@ class OLXProvider(GenericProvider):
                                 else:
                                     self.search_params.append((f"search[{key}]", value))
 
-    def get_new_entries(self):
+    def get_new_entries(self) -> dict:
         req = self.scraper.post(self.call_url, data=self.search_params, headers={
             'User-Agent': self.config['user_agent'],
             'Accept': '*/*',
@@ -58,7 +58,6 @@ class OLXProvider(GenericProvider):
         if req.status_code == requests.codes.ok: #pylint: disable=no-member
             soup = BeautifulSoup(req.text, features="html.parser")
             entries = {}
-            entries_ids = []
             for offer in soup.find_all('td', {'class': 'offer'}):
                 if 'include_promoted' in self.config and not self.config['include_promoted']:
                     if offer.find('span', {'class': 'paid'}) and 'promoted' in offer['class']:
@@ -76,9 +75,8 @@ class OLXProvider(GenericProvider):
                     }
                     if 'include_photos' in self.config and self.config['include_photos']:
                         entries[id_]['photos'] = self.get_photos(url)
-                    entries_ids.append(id_)
 
-            return entries_ids, entries
+            return entries
 
     def get_photos(self, url: str) -> list:
         req = self.scraper.get(url, headers={

@@ -20,25 +20,25 @@ class GenericProvider(ABC):
         self.queue = queue
 
     @abstractmethod
-    def get_new_entries(self):
+    def get_new_entries(self) -> dict:
         pass
 
     def scan(self):
         logger.info(f'{self.__class__.__name__} @ {sha1sum(repr(sorted_dict(self.config)))}: scanning')
-        ids, data = self.get_new_entries()
-        self.notify(ids, data)
-        self.id_list.put_ids(ids)
+        data = self.get_new_entries()
+        self.notify(data)
+        self.id_list.put_ids(data.keys())
 
-    def notify(self, ids, data):
+    def notify(self, data: dict):
         i = 0
-        for id_ in ids:
-            if not any(word.lower() in data[id_]['title'].lower() or
-                       remove_accents(word.lower()) in data[id_]['title'].lower()
+        for id_, id_data in data.items():
+            if not any(word.lower() in id_data['title'].lower() or
+                       remove_accents(word.lower()) in id_data['title'].lower()
                        for word in self.config['exclude']) and \
                     not self.id_list.is_id_present(id_):
                 lock = threading.Lock()
                 with lock:
-                    self.queue.append(data[id_])
+                    self.queue.append(id_data)
                     i += 1
         logger.info(f'{self.__class__.__name__} @ {sha1sum(repr(sorted_dict(self.config)))}: got {i} entries')
         config_hash = sha1sum(repr(sorted_dict(self.config)))
