@@ -61,6 +61,8 @@ class AllegroProvider(GenericProvider):
         for offer_type in accepted_types:
             for offer in offers[offer_type][:self.limit]:
                 id_ = str(offer['id'])
+                if self.id_list.is_id_present(id_):
+                    continue
                 offer_link = f"https://{self.allegro_api.get_api_domain()}/oferta/{offer['id']}"
                 if 'vendor' in offer and 'url' in offer['vendor']:
                     offer_link = offer['vendor']['url']
@@ -73,8 +75,7 @@ class AllegroProvider(GenericProvider):
                         entries[id_]['photos'] = [x['url'] for x in offer['images']]
 
                 entries_ids.append(id_)
-        new_entries_id = [entry for entry in list(dict.fromkeys(entries_ids)) if not self.id_list.is_id_present(entry)]
-        return new_entries_id, entries
+        return entries_ids, entries
 
     def __getstate__(self):
         lock = threading.Lock()

@@ -65,6 +65,8 @@ class OLXProvider(GenericProvider):
                         continue
                 if offer.find('table') and offer.find('a', {'class': 'link'}):
                     id_ = sha1sum(f"{self.__class__.__name__}{offer.find('table')['data-id']}")
+                    if self.id_list.is_id_present(id_):
+                        continue
                     link = offer.find('a', {'class': 'link'})
                     url = link['href'].strip()
                     title = link.text.strip()
@@ -73,12 +75,10 @@ class OLXProvider(GenericProvider):
                         'title': title
                     }
                     if 'include_photos' in self.config and self.config['include_photos']:
-                        if not self.id_list.is_id_present(id_):
-                            entries[id_]['photos'] = self.get_photos(url)
+                        entries[id_]['photos'] = self.get_photos(url)
                     entries_ids.append(id_)
 
-            new_entries_id = [entry for entry in entries_ids if not self.id_list.is_id_present(entry)]
-            return new_entries_id, entries
+            return entries_ids, entries
 
     def get_photos(self, url: str) -> list:
         req = self.scraper.get(url, headers={

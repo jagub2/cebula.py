@@ -26,6 +26,8 @@ class EbayKleinanzeigenProvider(GenericProvider):
             entries_ids = []
             for offer in soup.find_all('article', {'class': 'aditem'}):
                 id_ = sha1sum(f"{self.__class__.__name__}{offer['data-adid']}")
+                if self.id_list.is_id_present(id_):
+                    continue
                 link = offer.find('a', {'class': 'ellipsis'})
                 url = link['href'].strip()
                 if url.startswith('/'):
@@ -41,8 +43,7 @@ class EbayKleinanzeigenProvider(GenericProvider):
                         entries[id_]['photos'] = self.get_photos(url)
                 entries_ids.append(id_)
 
-            new_entries_id = [entry for entry in entries_ids if not self.id_list.is_id_present(entry)]
-            return new_entries_id, entries
+            return entries_ids, entries
 
     def get_photos(self, url: str) -> list:
         req = self.scraper.get(url, headers={

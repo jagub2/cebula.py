@@ -24,6 +24,8 @@ class WordpressProvider(GenericProvider):
             entries_ids = []
             for entry in req_json:
                 id_ = sha1sum(f"{self.__class__.__name__}{entry['id']}")
+                if self.id_list.is_id_present(id_):
+                    continue
                 photo_url = None
                 if 'include_photos' in self.config and self.config['include_photos'] and \
                         '_links' in entry and \
@@ -41,5 +43,5 @@ class WordpressProvider(GenericProvider):
                 entries_ids.append(id_)
                 if photo_url:
                     entries[id_]['photos'] = [photo_url]
-            new_entries_id = [entry for entry in entries_ids if not self.id_list.is_id_present(entry)]
-            return new_entries_id, entries
+
+            return entries_ids, entries
