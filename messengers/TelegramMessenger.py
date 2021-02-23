@@ -2,7 +2,7 @@
 from collections import deque
 from loguru import logger
 from telegram import InputMediaPhoto
-from telegram.error import TelegramError, TimedOut, NetworkError
+from telegram.error import *
 from telegram.ext import Updater, messagequeue
 from cebula_common import for_all_methods
 from messengers import GenericMessenger
@@ -65,14 +65,15 @@ class TelegramMessenger(GenericMessenger.GenericMessenger):
                     if len(self.queue) > 0:
                         data = self.queue.pop()
                         if 'photos' in data and len(data['photos']) > 0:
-                            media = []
-                            for photo in data['photos']:
-                                media.append(InputMediaPhoto(media=photo))
-                            media[0].caption = f"{data['title']}: {data['link']}"
-                            self.dispatcher.bot.send_media_group(chat_id=self.master, media=media)
+                            for i in range(0, len(data['photos']), 9):
+                                media = []
+                                for photo in data['photos'][i:i + 9]:
+                                    media.append(InputMediaPhoto(media=photo))
+                                media[0].caption = f"{data['title']}: {data['link']}"
+                                self.dispatcher.bot.send_media_group(chat_id=self.master, media=media)
                         else:
                             self.dispatcher.bot.send_message(chat_id=self.master, text=f"{data['title']}: {data['link']}")
-            except (TimedOut, NetworkError, TelegramError) as e:
+            except (TimedOut, NetworkError, TelegramError, Unauthorized, BadRequest, ChatMigrated, RetryAfter, Conflict) as e:
                 logger.error(f"TelegramBot: Got exception: {e}")
                 traceback.print_stack()
                 self.connect()
