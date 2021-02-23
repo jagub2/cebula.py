@@ -73,7 +73,8 @@ class OLXProvider(GenericProvider):
                         'title': title
                     }
                     if 'include_photos' in self.config and self.config['include_photos']:
-                        entries[id_]['photos'] = self.get_photos(url)
+                        if not self.id_list.is_id_present(id_):
+                            entries[id_]['photos'] = self.get_photos(url)
                     entries_ids.append(id_)
 
             new_entries_id = [entry for entry in entries_ids if not self.id_list.is_id_present(entry)]

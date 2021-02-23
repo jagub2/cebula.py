@@ -23,6 +23,10 @@ class GenericProvider(ABC):
     def get_new_entries(self):
         pass
 
+    @abstractmethod
+    def get_photos(self):
+        pass
+
     def scan(self):
         logger.info(f'{self.__class__.__name__} @ {sha1sum(repr(sorted_dict(self.config)))}: scanning')
         ids, data = self.get_new_entries()

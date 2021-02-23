@@ -31,20 +31,34 @@ class EbayKleinanzeigenProvider(GenericProvider):
                 if url.startswith('/'):
                     url = f"{self.parsed_uri.scheme}://{self.parsed_uri.netloc}{url}"
                 title = link.text.strip()
-                image = None
-                if 'include_photos' in self.config and self.config['include_photos']:
-                    image_box = offer.find('div', {'class': 'imagebox'})
-                    if 'data-imgsrc' in image_box.attrs:
-                        image = image_box.get('data-imgsrc')
+
                 entries[id_] = {
                     'link': url,
                     'title': title
                 }
-                if image:
-                    entries[id_]['photos'] = [image]
+                if 'include_photos' in self.config and self.config['include_photos']:
+                    if not self.id_list.is_id_present(id_):
+                        entries[id_]['photos'] = self.get_photos(url)
                 entries_ids.append(id_)
 
             new_entries_id = [entry for entry in entries_ids if not self.id_list.is_id_present(entry)]
             return new_entries_id, entries
-        else:
-            pass
+
+    def get_photos(self, url: str) -> list:
+        req = self.scraper.get(url, headers={
+            'User-Agent': self.config['user_agent'],
+            'Accept': '*/*',
+            'Referer': self.config['url'],
+        })
+        all_photos = []
+        if req.status_code == requests.codes.ok: #pylint: disable=no-member
+            soup = BeautifulSoup(req.text, features="html.parser")
+            gallery = soup.find('div', {'id': 'galleryimage-element'})
+            if gallery:
+                photos = gallery.find_all('img')
+                for photo in photos:
+                    src = 'src'
+                    if 'data-imgsrc' in photo.attrs:
+                        src = 'data-imgsrc'
+                    all_photos.append(photo.get(src))
+        return all_photos
