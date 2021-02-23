@@ -40,7 +40,7 @@ class GenericProvider(ABC):
                 with lock:
                     self.queue.append(id_data)
                     i += 1
-        logger.info(f'{self.__class__.__name__} @ {sha1sum(repr(sorted_dict(self.config)))}: got {i} entries')
+        logger.info(f'{self.__class__.__name__} @ {sha1sum(repr(sorted_dict(self.config)))}: got {i} {"entries" if i != 1 else "entry"}')
         config_hash = sha1sum(repr(sorted_dict(self.config)))
         if does_pickle_exist(config_hash, self.__class__.__name__):
             write_pickle(config_hash, self)
