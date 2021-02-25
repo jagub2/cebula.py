@@ -12,24 +12,30 @@ import unidecode
 class IdList:
 
     def __init__(self, config: dict):
-        self.redis = redis.Redis(**config)
+        self.config = config
+        self.redis = redis.Redis(**self.config)
+        self.lock = threading.Lock()
 
     def is_id_present(self, id_):
-        lock = threading.Lock()
-        with lock:
+        with self.lock:
             return id_.encode('utf-8') in self.redis.smembers('cebulapy_cache')
         return False
 
     def put_ids(self, ids):
-        lock = threading.Lock()
-        with lock:
+        with self.lock:
             if len(ids) > 0:
                 self.redis.sadd('cebulapy_cache', *ids)
 
     def __getstate__(self):
         state_dict = self.__dict__.copy()
         del state_dict['redis']
+        del state_dict['lock']
         return state_dict
+
+    def __setstate(self, state_dict):
+        state_dict['lock'] = threading.Lock()
+        state_dict['redis'] = redis.Redis(**state_dict['config'])
+        self.__dict__ = state_dict
 
 
 def sha1sum(string_to_encode: str) -> str:

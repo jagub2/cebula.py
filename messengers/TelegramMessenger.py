@@ -46,6 +46,7 @@ class TelegramMessenger(GenericMessenger.GenericMessenger):
         self.api_key = api_key
         self.master = master
         self.keep_running = True
+        self.lock = threading.Lock()
 
     def connect(self):
         self.message_queue = messagequeue.MessageQueue(all_burst_limit=3, all_time_limit_ms=3000)
@@ -59,14 +60,13 @@ class TelegramMessenger(GenericMessenger.GenericMessenger):
         while self.keep_running:
             time.sleep(0.1)
             try:
-                lock = threading.Lock()
-                with lock:
+                with self.lock:
                     if len(self.queue) > 0:
                         data = self.queue.pop()
-                        if 'photos' in data and len(data['photos']) > 0:
-                            for i in range(0, len(data['photos']), 9):
+                        if 'photos' in data and data['photos'] and len(data['photos']) > 0:
+                            for i in range(0, len(data['photos']), 10):
                                 media = []
-                                for photo in data['photos'][i:i + 9]:
+                                for photo in data['photos'][i:i + 10]:
                                     media.append(InputMediaPhoto(media=photo))
                                 media[0].caption = f"{data['title']}: {data['link']}"
                                 self.dispatcher.bot.send_media_group(chat_id=self.master, media=media)
@@ -76,8 +76,9 @@ class TelegramMessenger(GenericMessenger.GenericMessenger):
                 ChatMigrated, RetryAfter, Conflict, InvalidToken) as e:
                 logger.error(f"TelegramBot: Got exception: {e}")
                 traceback.print_stack()
-                self.connect()
-                self.queue_loop()
+                with self.lock:
+                    self.connect()
+                    self.queue_loop()
 
     def halt(self):
         self.keep_running = False

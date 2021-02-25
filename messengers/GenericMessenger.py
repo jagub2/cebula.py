@@ -1,7 +1,9 @@
 from abc import abstractmethod
 from loguru import logger
+from cebula_common import for_all_methods
 
 
+@for_all_methods(logger.catch)
 class GenericMessenger:
 
     def __init__(self, *args, **kwargs):

@@ -14,16 +14,14 @@ class AllegroProvider(GenericProvider):
         super(AllegroProvider, self).__init__(queue, config, id_list)
         self.allegro_api = AllegroAPIHandler(self.config['allegro_client_id'], self.config['allegro_client_secret'],
                                              self.config['use_sandbox'], self.config['max_failures'])
-        lock = threading.Lock()
-        with lock:
-            login_url = self.allegro_api.login()
-            if login_url:
+        login_url = self.allegro_api.login()
+        if login_url:
 
-                self.queue.append({
-                    'title': 'Allegro login',
-                    'link': login_url
-                })
-                self.allegro_api.authorize_device()
+            self.queue.append({
+                'title': 'Allegro login',
+                'link': login_url
+            })
+            self.allegro_api.authorize_device()
         api_soup = call_orig_url(self.config['url'])
         self.filters = self.allegro_api.extract_url_filters(self.config['url'], api_soup)
         self.limit = 60
@@ -46,12 +44,10 @@ class AllegroProvider(GenericProvider):
                 if not self.allegro_api.check_validity_of_login():
                     login_url = self.allegro_api.login()
                     if login_url:
-                        lock = threading.Lock()
-                        with lock:
-                            self.queue.append({
-                                'title': 'Allegro login',
-                                'link': login_url
-                            })
+                        self.queue.append({
+                            'title': 'Allegro login',
+                            'link': login_url
+                        })
                     break
             page += 1
         accepted_types = ['regular']
@@ -76,11 +72,9 @@ class AllegroProvider(GenericProvider):
         return entries
 
     def __getstate__(self):
-        lock = threading.Lock()
-        with lock:
-            state_dict = self.__dict__.copy()
-            del state_dict['allegro_api']
-            return state_dict
+        state_dict = super(AllegroProvider, self).__getstate__()
+        del state_dict['allegro_api']
+        return state_dict
 
     def __setstate__(self, state_dict):
         state_dict['allegro_api'] = AllegroAPIHandler(state_dict['config']['allegro_client_id'],
