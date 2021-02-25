@@ -3,11 +3,11 @@ from bs4 import BeautifulSoup
 from loguru import logger
 from typing import Pattern
 from urllib.parse import urlparse, ParseResult
+from pynchronized.pynchronized import thread_synchronized
 import datetime
 import json
 import re
 import requests
-import threading
 import time
 
 
@@ -34,6 +34,7 @@ class Singleton(type):
         return cls._instances[cls]
 
 
+@thread_synchronized
 class AllegroAPIHandler(metaclass=Singleton):
 
     def __init__(self, client_id, client_secret, sandbox=False, max_failures=20):
@@ -48,67 +49,62 @@ class AllegroAPIHandler(metaclass=Singleton):
         self.max_failures = max_failures
         self.initialized = False
         self.login_in_progress = False
-        self.lock = None
-        self.get_lock()
         if sandbox:
             self.api_domain = 'allegro.pl.allegrosandbox.pl'
         logger.info('Allegro API: __init__')
 
-    def get_lock(self):
-        if not 'lock' in self.__dict__ or not self.lock:
-            self.lock = threading.Lock()
-        return self.lock
+    def __getstate__(self):
+        state_dict = self.__dict__.copy()
+        del state_dict['__lock__']
+        return state_dict
 
     def login(self):
-        with self.get_lock():
-            if (self.initialized and self.check_validity_of_login()) or self.login_in_progress:
-                return
-            logger.info('Allegro API: login loop')
-            self.login_in_progress = True
-            req = requests.post(f"https://{self.api_domain}/auth/oauth/device",
-                                auth=(self.client_id, self.client_secret),
-                                data={'client_id': self.client_id})
-            if req.status_code == requests.codes.ok: #pylint: disable=no-member
-                logger.info('Allegro API: login ok')
-                response = req.json()
-                self.device_code = response['device_code']
-                self.interval = response['interval']
-                return response['verification_uri_complete']
+        if (self.initialized and self.check_validity_of_login()) or self.login_in_progress:
+            return
+        logger.info('Allegro API: login loop')
+        self.login_in_progress = True
+        req = requests.post(f"https://{self.api_domain}/auth/oauth/device",
+                            auth=(self.client_id, self.client_secret),
+                            data={'client_id': self.client_id})
+        if req.status_code == requests.codes.ok: #pylint: disable=no-member
+            logger.info('Allegro API: login ok')
+            response = req.json()
+            self.device_code = response['device_code']
+            self.interval = response['interval']
+            return response['verification_uri_complete']
 
     def authorize_device(self, failures=0):
-        with self.get_lock():
-            if self.initialized and self.check_validity_of_login():
-                return
-            if failures > self.max_failures:
-                return
-            req = requests.post(f"https://{self.api_domain}/auth/oauth/token?grant_type="
-                                f"urn%3Aietf%3Aparams%3Aoauth%3Agrant-type%3Adevice_code&device_code="
-                                f"{self.device_code}",
-                                auth=(self.client_id, self.client_secret))
-            if req.status_code != requests.codes.ok: #pylint: disable=no-member
-                time.sleep(self.interval)
-                self.authorize_device(failures=failures + 1)
-            else:
-                current_time = datetime.datetime.now()
-                response = req.json()
-                self.access_token = response['access_token']
-                self.refresh_token = response['refresh_token']
-                self.token_expiry = current_time + datetime.timedelta(seconds=int(response['expires_in']))
-                self.initialized = True
-                self.login_in_progress = False
-                logger.info('Allegro API: authorized device')
-                self.update_pickle()
+        if self.initialized and self.check_validity_of_login():
+            return
+        if failures > self.max_failures:
+            return
+        req = requests.post(f"https://{self.api_domain}/auth/oauth/token?grant_type="
+                            f"urn%3Aietf%3Aparams%3Aoauth%3Agrant-type%3Adevice_code&device_code="
+                            f"{self.device_code}",
+                            auth=(self.client_id, self.client_secret))
+        if req.status_code != requests.codes.ok: #pylint: disable=no-member
+            time.sleep(self.interval)
+            self.authorize_device(failures=failures + 1)
+        else:
+            current_time = datetime.datetime.now()
+            response = req.json()
+            self.access_token = response['access_token']
+            self.refresh_token = response['refresh_token']
+            self.token_expiry = current_time + datetime.timedelta(seconds=int(response['expires_in']))
+            self.initialized = True
+            self.login_in_progress = False
+            logger.info('Allegro API: authorized device')
+            self.update_pickle()
 
     def call_api(self, url, method='GET', **kwargs):
-        with self.get_lock():
-            self.check_tokens_validity_time_and_renew_if_needed()
-            if url.startswith('/'):
-                url = url[1:]
-            req = requests.request(method, f"https://api.{self.api_domain}/{url}", headers={
-                "Authorization": f"Bearer {self.access_token}",
-                "Accept": "application/vnd.allegro.public.v1+json"
-            }, **kwargs)
-            return req
+        self.check_tokens_validity_time_and_renew_if_needed()
+        if url.startswith('/'):
+            url = url[1:]
+        req = requests.request(method, f"https://api.{self.api_domain}/{url}", headers={
+            "Authorization": f"Bearer {self.access_token}",
+            "Accept": "application/vnd.allegro.public.v1+json"
+        }, **kwargs)
+        return req
 
     def check_tokens_validity_time_and_renew_if_needed(self):
         current_time = datetime.datetime.now()
@@ -117,32 +113,30 @@ class AllegroAPIHandler(metaclass=Singleton):
             self.renew_tokens()
 
     def renew_tokens(self):
-        with self.get_lock():
-            req = requests.post(f"https://{self.api_domain}/auth/oauth/token?grant_type=refresh_token"
-                                f"&refresh_token={self.refresh_token}",
-                                auth=(self.client_id, self.client_secret))
-            logger.info('Allegro API: posted renew')
-            if req.status_code == requests.codes.ok: #pylint: disable=no-member
-                logger.info('Allegro API: renew ok')
-                current_time = datetime.datetime.now()
-                response = req.json()
-                self.access_token = response['access_token']
-                self.refresh_token = response['refresh_token']
-                self.token_expiry = current_time + datetime.timedelta(seconds=int(response['expires_in']))
-                self.update_pickle()
+        req = requests.post(f"https://{self.api_domain}/auth/oauth/token?grant_type=refresh_token"
+                            f"&refresh_token={self.refresh_token}",
+                            auth=(self.client_id, self.client_secret))
+        logger.info('Allegro API: posted renew')
+        if req.status_code == requests.codes.ok: #pylint: disable=no-member
+            logger.info('Allegro API: renew ok')
+            current_time = datetime.datetime.now()
+            response = req.json()
+            self.access_token = response['access_token']
+            self.refresh_token = response['refresh_token']
+            self.token_expiry = current_time + datetime.timedelta(seconds=int(response['expires_in']))
+            self.update_pickle()
 
     def extract_api_filters(self, category_id, search_phrase):
-        with self.get_lock():
-            api_call_str = ""
-            if category_id is not None:
-                api_call_str = f"category.id={category_id}"
-            if search_phrase != '':
-                api_call_str = f"&phrase={search_phrase}"
-            req = self.call_api(f"/offers/listing?{api_call_str}&fallback=true&include=-all&include=filters")
-            if req.status_code == requests.codes.ok: #pylint: disable=no-member
-                json_ = req.json()
-                return json_['filters']
-            return None
+        api_call_str = ""
+        if category_id is not None:
+            api_call_str = f"category.id={category_id}"
+        if search_phrase != '':
+            api_call_str = f"&phrase={search_phrase}"
+        req = self.call_api(f"/offers/listing?{api_call_str}&fallback=true&include=-all&include=filters")
+        if req.status_code == requests.codes.ok: #pylint: disable=no-member
+            json_ = req.json()
+            return json_['filters']
+        return None
 
     def extract_url_filters(self, url, soup):
         filters = []
@@ -224,28 +218,17 @@ class AllegroAPIHandler(metaclass=Singleton):
         return self.api_domain
 
     def check_validity_of_login(self):
-        with self.get_lock():
-            req = self.call_api("/offers/listing?include=-all")
-            if req.status_code != requests.codes.ok: #pylint: disable=no-member
-                self.initialized = False
-                return False
-            return True
+        req = self.call_api("/offers/listing?include=-all")
+        if req.status_code != requests.codes.ok: #pylint: disable=no-member
+            self.initialized = False
+            return False
+        return True
 
     def update_pickle(self):
-        with self.get_lock():
-            logger.info('Allegro API: updating pickle')
-            pickle_name = sha1sum(f"{self.client_id}{self.client_secret}")
-            if does_pickle_exist(pickle_name, self.__class__.__name__):
-                write_pickle(pickle_name, self)
-
-    def __getstate__(self):
-        state_dict = self.__dict__.copy()
-        del state_dict['lock']
-        return state_dict
-
-    def __setstate(self, state_dict):
-        state_dict['lock'] = threading.Lock()
-        self.__dict__ = state_dict
+        logger.info('Allegro API: updating pickle')
+        pickle_name = sha1sum(f"{self.client_id}{self.client_secret}")
+        if does_pickle_exist(pickle_name, self.__class__.__name__):
+            write_pickle(pickle_name, self)
 
 
 def extract_category_id_from_orig_url(soup, url):

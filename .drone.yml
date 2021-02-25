@@ -19,6 +19,7 @@ steps:
       pushd "$${REPO}" && \
       git fetch origin +refs/heads/master && \
       git checkout "${DRONE_COMMIT}" && \
+      git submodule update --init --recursive && \
       docker-compose build && \
       docker-compose pull && \
       docker-compose down && \

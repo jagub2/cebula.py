@@ -1,0 +1,3 @@
+[submodule "pynchronized"]
+	path = pynchronized
+	url = https://github.com/julvo/pynchronized.git
