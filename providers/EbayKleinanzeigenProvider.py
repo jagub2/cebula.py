@@ -38,8 +38,7 @@ class EbayKleinanzeigenProvider(GenericProvider):
                     'title': title
                 }
                 if 'include_photos' in self.config and self.config['include_photos']:
-                    if not self.id_list.is_id_present(id_):
-                        entries[id_]['photos'] = self.get_photos(url)
+                    entries[id_]['photos'] = self.get_photos(url)
 
             return entries
 

@@ -23,8 +23,9 @@ class GenericProvider(ABC):
     def scan(self):
         logger.info(f'{self.__class__.__name__} @ {sha1sum(repr(sorted_dict(self.config)))}: scanning')
         data = self.get_new_entries()
-        self.notify(data)
-        self.id_list.put_ids(data.keys())
+        if data:
+            self.notify(data)
+            self.id_list.put_ids(data.keys())
 
     def notify(self, data: dict):
         i = 0
