@@ -55,7 +55,8 @@ class AllegroAPIHandler(metaclass=Singleton):
 
     def __getstate__(self):
         state_dict = self.__dict__.copy()
-        del state_dict['__lock__']
+        if '__lock__' in state_dict:
+            del state_dict['__lock__']
         return state_dict
 
     def login(self):
