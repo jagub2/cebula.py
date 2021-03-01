@@ -14,8 +14,8 @@ except ImportError:
 def main():
     queue = deque()
 
-    with open('config.yaml', 'r') as f:
-        yml = yaml.load(f, Loader=Loader)
+    with open('config.yaml', 'r') as config_file:
+        yml = yaml.load(config_file, Loader=Loader)
 
     id_list = IdList(yml['global']['redis'])
 

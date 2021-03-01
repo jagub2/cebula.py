@@ -9,7 +9,7 @@ import requests
 class WordpressProvider(GenericProvider):
 
     def __init__(self, queue: deque, config: dict, id_list: IdList):
-        super(WordpressProvider, self).__init__(queue, config, id_list)
+        super().__init__(queue, config, id_list)
         self.call_url = f"{self.config['url']}/wp-json/wp/v2/posts"
         if 'search_phrase' in self.config:
             self.call_url += f"?search={self.config['search_phrase']}"
@@ -18,9 +18,9 @@ class WordpressProvider(GenericProvider):
         req = self.scraper.get(self.call_url, headers={
             'User-Agent': self.config['user_agent']
         })
+        entries = {}
         if req.status_code == requests.codes.ok: #pylint: disable=no-member
             req_json = req.json()
-            entries = {}
             for entry in req_json:
                 id_ = sha1sum(f"{self.__class__.__name__}{entry['id']}")
                 if self.id_list.is_id_present(id_):
@@ -42,4 +42,4 @@ class WordpressProvider(GenericProvider):
                 if photo_url:
                     entries[id_]['photos'] = [photo_url]
 
-            return entries
+        return entries

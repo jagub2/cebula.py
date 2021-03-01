@@ -7,9 +7,6 @@ import feedparser
 @for_all_methods(logger.catch)
 class RSSProvider(GenericProvider):
 
-    def __init__(self, queue: deque, config: dict, id_list: IdList):
-        super(RSSProvider, self).__init__(queue, config, id_list)
-
     def get_new_entries(self) -> dict:
         feed = feedparser.parse(self.config['url'], agent=self.config['user_agent'])
         entries = {}

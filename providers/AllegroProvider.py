@@ -11,7 +11,7 @@ import requests
 class AllegroProvider(GenericProvider):
 
     def __init__(self, queue: deque, config: dict, id_list: IdList):
-        super(AllegroProvider, self).__init__(queue, config, id_list)
+        super().__init__(queue, config, id_list)
         self.allegro_api = AllegroAPIHandler(self.config['allegro_client_id'], self.config['allegro_client_secret'],
                                              self.config['use_sandbox'], self.config['max_failures'])
         login_url = self.allegro_api.login()
@@ -72,7 +72,7 @@ class AllegroProvider(GenericProvider):
         return entries
 
     def __getstate__(self):
-        state_dict = super(AllegroProvider, self).__getstate__()
+        state_dict = super().__getstate__()
         del state_dict['allegro_api']
         return state_dict
 

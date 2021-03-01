@@ -38,10 +38,8 @@ class GenericProvider(ABC):
                     not self.id_list.is_id_present(id_):
                 self.queue.append(id_data)
                 i += 1
-        logger.info(f'{self.__class__.__name__} @ {sha1sum(repr(sorted_dict(self.config)))}: got {i} {"entries" if i != 1 else "entry"}')
-        config_hash = sha1sum(repr(sorted_dict(self.config)))
-        if does_pickle_exist(config_hash, self.__class__.__name__):
-            write_pickle(config_hash, self)
+        if i > 0:
+            logger.info(f'{self.__class__.__name__} @ {sha1sum(repr(sorted_dict(self.config)))}: got {i} {"entries" if i != 1 else "entry"}')
 
     def __getstate__(self):
         state_dict = self.__dict__.copy()

@@ -9,18 +9,15 @@ import requests
 @for_all_methods(logger.catch)
 class PepperProvider(GenericProvider):
 
-    def __init__(self, queue: deque, config: dict, id_list: IdList):
-        super(PepperProvider, self).__init__(queue, config, id_list)
-
     def get_new_entries(self) -> dict:
         req = self.scraper.get(self.url, headers={
             'User-Agent': self.config['user_agent'],
             'Accept': '*/*',
             'Referer': self.url
         })
+        entries = {}
         if req.status_code == requests.codes.ok: #pylint: disable=no-member
             soup = BeautifulSoup(req.text, features="lxml")
-            entries = {}
             for offer in soup.find_all('article', {'class': 'thread--deal'}):
                 id_ = sha1sum(f"{self.__class__.__name__}{offer['id']}")
                 if self.id_list.is_id_present(id_):
@@ -50,4 +47,4 @@ class PepperProvider(GenericProvider):
                 if photo_url:
                     entries[id_]['photos'] = [photo_url]
 
-            return entries
+        return entries

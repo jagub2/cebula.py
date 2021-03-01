@@ -61,7 +61,7 @@ class AllegroAPIHandler(metaclass=Singleton):
 
     def login(self):
         if (self.initialized and self.check_validity_of_login()) or self.login_in_progress:
-            return
+            return None
         logger.info('Allegro API: login loop')
         self.login_in_progress = True
         req = requests.post(f"https://{self.api_domain}/auth/oauth/device",
@@ -73,6 +73,7 @@ class AllegroAPIHandler(metaclass=Singleton):
             self.device_code = response['device_code']
             self.interval = response['interval']
             return response['verification_uri_complete']
+        return None
 
     def authorize_device(self, failures=0):
         if self.initialized and self.check_validity_of_login():
