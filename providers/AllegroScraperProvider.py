@@ -68,7 +68,7 @@ class AllegroScraperProvider(GenericProvider):
 
                     if not element['promoted']:
                         regular_offers += 1
-                    link = f"{self.parsed_uri.scheme}://{self.parsed_uri.netloc}/oferta/{id_}"
+                    link = f"{self.parsed_uri.scheme}://{self.parsed_uri.netloc}/oferta/{element['id']}"
                     title = element['name'].strip()
                     entries[id_] = {
                          'link': link,
