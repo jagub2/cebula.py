@@ -1,6 +1,7 @@
 from cebula_common import * #pylint: disable=unused-wildcard-import
 from abc import ABC, abstractmethod
 from collections import deque
+from fake_useragent import UserAgent, FakeUserAgentError
 from loguru import logger
 import cfscrape
 
@@ -16,12 +17,20 @@ class GenericProvider(ABC):
         self.scraper = cfscrape.create_scraper()
         self.queue = queue
 
+        self.user_agent_randomizer = None
+        try:
+            self.user_agent_randomizer = UserAgent(verify_ssl=False)
+        except FakeUserAgentError:
+            self.user_agent_randomizer = UserAgent(verify_ssl=False, use_cache_server=False)
+
     @abstractmethod
     def get_new_entries(self) -> dict:
         pass
 
     def scan(self):
         logger.debug(f'{self.__class__.__name__} @ {sha1sum(repr(sorted_dict(self.config)))}: scanning')
+        if 'randomize_user_agent' in self.config and self.config['randomize_user_agent']:
+            self.config['user_agent'] = self.user_agent_randomizer.random
         data = self.get_new_entries()
         if data:
             self.notify(data)

@@ -9,3 +9,4 @@ unidecode>=1.1.2
 redis>=3.5.3
 hiredis>=1.1.0
 loguru
+fake-useragent>=0.1.11
