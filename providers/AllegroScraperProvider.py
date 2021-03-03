@@ -38,7 +38,7 @@ class AllegroScraperProvider(GenericProvider):
                 if not call_url.endswith('&'):
                     call_url += '&'
                 call_url += f'p={page}'
-            logger.info(f"XXX {call_url} X {page} X {regular_offers}")
+
             req = self.scraper.get(call_url, headers={
                 'User-Agent': self.config['user_agent'],
                 'Accept': 'application/json',
