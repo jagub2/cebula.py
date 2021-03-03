@@ -58,7 +58,7 @@ class AllegroScraperProvider(GenericProvider):
                     still_process_results = False
 
                 for element in elements:
-                    if not all(x in element.keys() for x in ['type', 'id', 'images', 'name', 'promoted', 'url']):
+                    if not all(x in element.keys() for x in ['type', 'id', 'images', 'name', 'promoted', 'url', 'vendor']):
                         continue
                     if element['type'] in ['label', 'advertisement', 'advert_external'] or (element['promoted'] and not include_promoted):
                         continue
@@ -69,7 +69,9 @@ class AllegroScraperProvider(GenericProvider):
                     if not element['promoted']:
                         regular_offers += 1
 
-                    link = element['url']
+                    link = f"{self.parsed_uri.scheme}://{self.parsed_uri.netloc}/oferta/{element['id']}"
+                    if element['vendor'] != 'allegro':
+                        link = element['url']
                     title = element['name'].strip()
                     entries[id_] = {
                          'link': link,
