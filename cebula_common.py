@@ -43,7 +43,10 @@ def sha1sum(string_to_encode: str) -> str:
 
 
 def sorted_dict(input_dict: dict) -> dict:
-    return dict(OrderedDict(sorted(input_dict.items())))
+    dict_ = input_dict.copy()
+    if 'randomize_user_agent' in dict_ and 'user_agent' in dict_:
+        del dict_['user_agent']
+    return dict(OrderedDict(sorted(dict_.items())))
 
 
 def get_pickle_dir() -> str:
