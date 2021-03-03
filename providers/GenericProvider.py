@@ -18,6 +18,7 @@ class GenericProvider(ABC):
         self.queue = queue
 
         self.user_agent_randomizer = None
+        self.set_user_agent_randomizer()
 
     def set_user_agent_randomizer(self):
         try:
