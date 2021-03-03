@@ -1,5 +1,6 @@
 from providers import GenericProvider
 from providers import AllegroProvider
+from providers import AllegroScraperProvider
 from providers import OLXProvider
 from providers import PepperProvider
 from providers import RSSProvider
