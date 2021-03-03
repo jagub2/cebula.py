@@ -18,6 +18,8 @@ class GenericProvider(ABC):
         self.queue = queue
 
         self.user_agent_randomizer = None
+
+    def set_user_agent_randomizer(self):
         try:
             self.user_agent_randomizer = UserAgent(verify_ssl=False)
         except FakeUserAgentError:
@@ -54,4 +56,10 @@ class GenericProvider(ABC):
         state_dict = self.__dict__.copy()
         del state_dict['id_list']
         del state_dict['queue']
+        del state_dict['user_agent_randomizer']
         return state_dict
+
+    def __setstate__(self, state_dict):
+        state_dict['user_agent_randomizer'] = None
+        self.__dict__ = state_dict
+        self.set_user_agent_randomizer()

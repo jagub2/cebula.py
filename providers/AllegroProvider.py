@@ -81,4 +81,4 @@ class AllegroProvider(GenericProvider):
                                                       state_dict['config']['allegro_client_secret'],
                                                       state_dict['config']['use_sandbox'],
                                                       state_dict['config']['max_failures'])
-        self.__dict__ = state_dict
+        super().__setstate__(state_dict)
