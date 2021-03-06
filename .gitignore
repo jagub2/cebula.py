@@ -207,3 +207,5 @@ dmypy.json
 config.yaml
 redis_data
 pickles
+aws/python
+aws/aws_package.zip
