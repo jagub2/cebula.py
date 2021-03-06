@@ -30,7 +30,7 @@ class AllegroAWSScraperProvider(AWSProvider):
         if not api_url.endswith('?'):
             api_url += '?'
         api_url += urlencode({'url': self.config['url']})
-        req = self.call_api(self.config['aws_url'])
+        req = self.call_api(api_url)
 
         entries = {}
 
@@ -45,9 +45,6 @@ class AllegroAWSScraperProvider(AWSProvider):
                 id_ = sha1sum(f"{self.__class__.__name__}{element['id']}")
                 if self.id_list.is_id_present(id_):
                     continue
-
-                if not element['promoted']:
-                    regular_offers += 1
 
                 link = f"{self.parsed_uri.scheme}://{self.parsed_uri.netloc}/oferta/{element['id']}"
                 if element['vendor'] != 'allegro':
