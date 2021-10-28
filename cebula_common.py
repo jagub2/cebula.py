@@ -18,7 +18,7 @@ class IdList:
 
     def is_id_present(self, id_):
         with self.lock:
-            return id_.encode('utf-8') in self.redis.smembers('cebulapy_cache')
+            return self.redis.sismember('cebulapy_cache', id_)
         return False
 
     def put_ids(self, ids):
